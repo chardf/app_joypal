@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">FINAL-PROJECT</string>
+    <string name="joypal">JoyPal</string>
+    <string name="character_c">Character Creator</string>
+    <string name="button">Get Start</string>
+   <string name="button_design">Design Joypal</string>
+    <string name="button_next">Next</string>
+    <string name="create_describe">Let’s set JoyPet’s personality!</string>
+    <string name="create_describe2">Don’t want to set personality?</string>
+    <string name="button_skip">skip</string>
+    <string name="joypal_gene">JoyPal Generating...</string>
+    <string name="load">80%</string>
+</resources>

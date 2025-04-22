@@ -1,0 +1,177 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFDEE"
+    tools:context=".ui.getstart">
+
+    <!-- TextView -->
+
+    <!-- 输入框容器 -->
+
+    <TextView
+        android:id="@+id/create_describe"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginTop="68dp"
+        android:gravity="center"
+        android:text="@string/create_describe"
+        android:textAppearance="@style/joypal2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.571"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/create_describe"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp"
+        android:gravity="center">
+
+        <!-- 输入框 1 -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_layout_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/nameEditText"
+                android:layout_width="340dp"
+                android:layout_height="50dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:color/white"
+                android:hint="What’s JoyPet’s Name?"
+                android:textColor="@android:color/black"
+                android:padding="10dp"
+                android:maxLength="30" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 输入框 2 -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lookEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/look"
+                android:layout_width="340dp"
+                android:layout_height="50dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:color/white"
+                android:hint="What does JoyPet look like?"
+                android:textColor="@android:color/black"
+                android:padding="10dp"
+                android:maxLength="30" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 输入框 3 -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/genderEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/gender"
+                android:layout_width="340dp"
+                android:layout_height="50dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:color/white"
+                android:hint="What’s JoyPet’s Gender?"
+                android:textColor="@android:color/black"
+                android:padding="10dp"
+                android:maxLength="30" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 输入框 4 -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/personalityEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/personality"
+                android:layout_width="340dp"
+                android:layout_height="50dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:color/white"
+                android:hint="What’s JoyPet’s Personality?"
+                android:textColor="@android:color/black"
+                android:padding="10dp"
+                android:maxLength="30" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- MaterialButton -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_design2"
+            android:layout_width="300dp"
+            android:layout_height="58dp"
+            android:text="@string/button_next"
+            android:backgroundTint="#044132"
+            app:cornerRadius="29dp"
+            app:iconPadding="8dp"
+            app:rippleColor="#80FFFFFF"
+            app:strokeColor="#2C2C2C"
+            app:strokeWidth="2dp"
+            android:textAppearance="@style/button"
+            app:layout_constraintTop_toBottomOf="@id/personalityEditText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:enabled="false"
+            android:textColor="@android:color/white"/> <!-- 字体始终是白色 -->
+
+
+        <!-- TextView -->
+        <TextView
+            android:id="@+id/create_describe2"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:text="@string/create_describe2"
+            android:textAppearance="@style/create_describe2"
+            app:layout_constraintTop_toBottomOf="@id/button_design2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="15dp" />
+
+        <!-- MaterialButton -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/skip"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:text="@string/button_skip"
+            android:backgroundTint="#044132"
+            app:cornerRadius="29dp"
+            app:iconPadding="8dp"
+            app:rippleColor="#80FFFFFF"
+            app:strokeColor="#2C2C2C"
+            app:strokeWidth="2dp"
+            android:textAppearance="@style/button"
+            app:layout_constraintTop_toBottomOf="@id/create_describe2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <!-- 底部导航栏 -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        style="@style/BottomNavigationViewStyle"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        app:backgroundTint="#FFFDEE"
+        app:labelVisibilityMode="unlabeled"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#CCCCCC"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+</androidx.constraintlayout.widget.ConstraintLayout>

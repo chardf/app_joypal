@@ -1,0 +1,61 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFDEE"
+    tools:context=".ui.getstart">
+
+    <!-- 内容区域 -->
+    <TextView
+        android:id="@+id/create_joypal"
+        android:layout_width="136dp"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:text="@string/joypal"
+        android:textAppearance="@style/joypal"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="200dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_design"
+        android:layout_width="300dp"
+        android:layout_height="58dp"
+        android:text="@string/button_design"
+        android:backgroundTint="@null"
+        app:backgroundTint="#044132"
+        app:cornerRadius="29dp"
+        app:iconPadding="8dp"
+        app:rippleColor="#80FFFFFF"
+        app:strokeColor="#2C2C2C"
+        app:strokeWidth="2dp"
+        android:textAppearance="@style/button"
+        app:layout_constraintTop_toBottomOf="@id/create_joypal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="60dp" />
+
+    <!-- 底部导航栏 -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        style="@style/BottomNavigationViewStyle"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        app:backgroundTint="#FFFDEE"
+        app:labelVisibilityMode="unlabeled"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#CCCCCC"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
