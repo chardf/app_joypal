@@ -9,5 +9,5 @@
     <string name="create_describe2">Don’t want to set personality?</string>
     <string name="button_skip">skip</string>
     <string name="joypal_gene">JoyPal Generating...</string>
-    <string name="load">80%</string>
+    <string name="load">0%</string>
 </resources>
