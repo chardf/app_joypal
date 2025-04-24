@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.final_project.R;
 import com.example.final_project.data.network.KimiChatApiService;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.File;
 
@@ -62,6 +63,45 @@ public class joypal_chat extends AppCompatActivity {
                     Toast.makeText(joypal_chat.this, "请输入内容后再发送！", Toast.LENGTH_SHORT).show();
                 }
             }
+        });
+
+        // 初始化导航栏
+        setupBottomNavigationView();
+    }
+
+    private void setupBottomNavigationView() {
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        // 设置导航栏图标的默认选择项为 "joypal"
+        bottomNavigationView.setSelectedItemId(R.id.menu_joypal);
+
+        // 为导航栏的每个选项设置监听器
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            Intent intent;
+            int itemId = item.getItemId();
+            if (itemId == R.id.menu_home) {
+                // 跳转到 Home 页面
+                intent = new Intent(joypal_chat.this, getstart.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.menu_create) {
+                // 跳转到 Create 页面
+                intent = new Intent(joypal_chat.this, Create_Joypet.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.menu_joypal) {
+                // 当前已经是 Joypal 页面，无需跳转
+                return true;
+            } else if (itemId == R.id.menu_settings) {
+                // 跳转到 Settings 页面
+                intent = new Intent(joypal_chat.this, settings.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                return true;
+            }
+            return false;
         });
     }
 

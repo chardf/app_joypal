@@ -2,34 +2,25 @@ package com.example.final_project.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+
+import com.example.final_project.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.button.MaterialButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.final_project.R;
-
-public class getstart extends AppCompatActivity {
+public class settings extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.launch);
+        setContentView(R.layout.settings); // 确保布局文件名为 settings.xml
 
         // 初始化导航栏
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         setupBottomNavigationView(bottomNavigationView);
 
-        // 设置默认选中项为 Home
-        bottomNavigationView.setSelectedItemId(R.id.menu_home);
-
-        // 初始化 "开始" 按钮
-        MaterialButton nextButton = findViewById(R.id.button1); // 确保使用正确的按钮ID
-        nextButton.setOnClickListener(view -> {
-            // 创建 Intent 跳转到 PersonalityDesign 页面
-            Intent intent = new Intent(getstart.this, personality_design.class); // 修正为正确的上下文
-            startActivity(intent); // 启动新页面
-        });
+        // 设置默认选中项为 Settings
+        bottomNavigationView.setSelectedItemId(R.id.menu_settings);
     }
 
     private void setupBottomNavigationView(BottomNavigationView bottomNavigationView) {
@@ -37,25 +28,25 @@ public class getstart extends AppCompatActivity {
             Intent intent;
             int itemId = item.getItemId();
             if (itemId == R.id.menu_home) {
-                // 当前已经是 Home 页面，无需跳转
+                // 跳转到 Home 页面
+                intent = new Intent(settings.this, getstart.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
                 return true;
             } else if (itemId == R.id.menu_create) {
                 // 跳转到 Create 页面
-                intent = new Intent(getstart.this, Create_Joypet.class);
+                intent = new Intent(settings.this, Create_Joypet.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.menu_joypal) {
                 // 跳转到 Joypal 页面
-                intent = new Intent(getstart.this, joypal_chat.class);
+                intent = new Intent(settings.this, joypal_chat.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.menu_settings) {
-                // 跳转到 Settings 页面
-                intent = new Intent(getstart.this, settings.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                // 当前已经是 Settings 页面，无需跳转
                 return true;
             }
             return false;
@@ -67,6 +58,6 @@ public class getstart extends AppCompatActivity {
         super.onResume();
         // 确保导航栏状态与页面一致
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.menu_home);
+        bottomNavigationView.setSelectedItemId(R.id.menu_settings);
     }
 }

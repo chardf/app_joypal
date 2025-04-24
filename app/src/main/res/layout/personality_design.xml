@@ -46,7 +46,7 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
                 android:background="@android:color/white"
-                android:hint="What’s JoyPet’s Name?"
+                android:hint="What’s JoyPal’s Name?"
                 android:textColor="@android:color/black"
                 android:padding="10dp"
                 android:maxLength="30" />
@@ -63,7 +63,7 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
                 android:background="@android:color/white"
-                android:hint="What does JoyPet look like?"
+                android:hint="What does JoyPal look like?"
                 android:textColor="@android:color/black"
                 android:padding="10dp"
                 android:maxLength="30" />
@@ -80,7 +80,7 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
                 android:background="@android:color/white"
-                android:hint="What’s JoyPet’s Gender?"
+                android:hint="What’s JoyPal’s Gender?"
                 android:textColor="@android:color/black"
                 android:padding="10dp"
                 android:maxLength="30" />
@@ -97,7 +97,7 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
                 android:background="@android:color/white"
-                android:hint="What’s JoyPet’s Personality?"
+                android:hint="What’s JoyPal’s Personality?"
                 android:textColor="@android:color/black"
                 android:padding="10dp"
                 android:maxLength="30" />
