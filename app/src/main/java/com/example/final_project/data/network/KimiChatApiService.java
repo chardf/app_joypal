@@ -12,15 +12,18 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
+import java.util.concurrent.TimeUnit;
 public class KimiChatApiService {
 
     private static final String API_URL = "https://api.moonshot.cn/v1/chat/completions";
     private static final String API_KEY = "sk-KoHw8fj2KltOEEVuszta3ISUq9X9OSbMjQGEuB74ZU80HzEy";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
-    private static final OkHttpClient client = new OkHttpClient();
-
+    private static final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS) // 设置连接超时时间为 30 秒
+            .readTimeout(30, TimeUnit.SECONDS)    // 设置读取超时时间为 30 秒
+            .writeTimeout(30, TimeUnit.SECONDS)   // 设置写入超时时间为 30 秒
+            .build();
     /**
      * 发送用户消息到 Kimi Chat API
      */

@@ -49,10 +49,11 @@ public class personality_design extends AppCompatActivity {
                 intent.putExtra("userInput", userInput); // 将用户输入传递到 oc_loading 页面
                 startActivity(intent);
 
-                // 可选：结束当前页面
                 finish();
             }
         });
+
+        setupBottomNavigationView();
     }
 
     private void setupInputListeners() {
@@ -104,5 +105,40 @@ public class personality_design extends AppCompatActivity {
         String personality = personalityEditText.getText().toString().trim();
 
         return "Name: " + name + ", Look: " + look + ", Gender: " + gender + ", Personality: " + personality;
+    }
+
+    private void setupBottomNavigationView() {
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        // 设置导航栏图标的默认选择项为 "create"
+        bottomNavigationView.setSelectedItemId(R.id.menu_create);
+
+        // 为导航栏的每个选项设置监听器
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.menu_home) {
+                // 跳转到 Home 页面
+                Intent intent = new Intent(personality_design.this, getstart.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.menu_create) {
+                // 跳转到 Create 页面
+                Intent intent = new Intent(personality_design.this, Create_Joypet.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.menu_joypal) {
+                // 当前已经是 Joypal 页面，无需跳转
+                return true;
+            } else if (itemId == R.id.menu_settings) {
+                // 跳转到 Settings 页面
+                Intent intent = new Intent(personality_design.this, settings.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                return true;
+            }
+            return false;
+        });
     }
 }

@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.final_project.R;
 import com.example.final_project.data.network.ImageGenerationService;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class oc_loading extends AppCompatActivity {
 
@@ -48,6 +49,10 @@ public class oc_loading extends AppCompatActivity {
 
         // 调用图片生成逻辑
         generateImage(userInput);
+
+        setupBottomNavigationView();
+
+
     }
 
     private void startProgressSimulation() {
@@ -106,5 +111,40 @@ public class oc_loading extends AppCompatActivity {
         super.onDestroy();
         // 确保在页面销毁时移除回调，避免内存泄漏
         handler.removeCallbacksAndMessages(null);
+    }
+
+    private void setupBottomNavigationView() {
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        // 设置导航栏图标的默认选择项为 "create"
+        bottomNavigationView.setSelectedItemId(R.id.menu_create);
+
+        // 为导航栏的每个选项设置监听器
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.menu_home) {
+                // 跳转到 Home 页面
+                Intent intent = new Intent(oc_loading.this, getstart.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.menu_create) {
+                // 跳转到 Create 页面
+                Intent intent = new Intent(oc_loading.this, Create_Joypet.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.menu_joypal) {
+                // 当前已经是 Joypal 页面，无需跳转
+                return true;
+            } else if (itemId == R.id.menu_settings) {
+                // 跳转到 Settings 页面
+                Intent intent = new Intent(oc_loading.this, settings.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                return true;
+            }
+            return false;
+        });
     }
 }

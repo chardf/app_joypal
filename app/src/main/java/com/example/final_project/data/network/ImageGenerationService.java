@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -30,8 +31,11 @@ public class ImageGenerationService {
     private static final String API_URL = "https://modelslab.com/api/v6/images/text2img";
     private static final String API_KEY = "mVoGu99mawr6lj9lxHe0VFO6JF3sjYlUXoyABzvL1QoSJtPvEON714TOgokt";
 
-    private final OkHttpClient httpClient = new OkHttpClient();
-
+    private final OkHttpClient httpClient = new OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS) // 设置连接超时时间为 30 秒
+            .readTimeout(30, TimeUnit.SECONDS)    // 设置读取超时时间为 30 秒
+            .writeTimeout(30, TimeUnit.SECONDS)   // 设置写入超时时间为 30 秒
+            .build();
     public interface ImageGenerationCallback {
         void onSuccess(String imagePath, String fileName); // 图片保存路径和文件名
         void onFailure(String errorMessage);
