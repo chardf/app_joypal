@@ -53,45 +53,6 @@ public class personality_design extends AppCompatActivity {
                 finish();
             }
         });
-
-        // 初始化导航栏
-        setupBottomNavigationView();
-    }
-
-    private void setupBottomNavigationView() {
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-
-        // 设置导航栏图标的默认选择项为 "create"
-        bottomNavigationView.setSelectedItemId(R.id.menu_create);
-
-        // 为导航栏的每个选项设置监听器
-        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-            Intent intent;
-            int itemId = item.getItemId();
-            if (itemId == R.id.menu_home) {
-                // 跳转到 Home 页面
-                intent = new Intent(personality_design.this, getstart.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.menu_create) {
-                // 当前已经是 Create 页面，无需跳转
-                return true;
-            } else if (itemId == R.id.menu_joypal) {
-                // 跳转到 Joypal 页面
-                intent = new Intent(personality_design.this, joypal_chat.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.menu_settings) {
-                // 跳转到 Settings 页面
-                intent = new Intent(personality_design.this, settings.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                return true;
-            }
-            return false;
-        });
     }
 
     private void setupInputListeners() {
@@ -142,6 +103,6 @@ public class personality_design extends AppCompatActivity {
         String gender = genderEditText.getText().toString().trim();
         String personality = personalityEditText.getText().toString().trim();
 
-        return "Character Name: " + name + ", Character Look: " + look + ", Character Gender: " + gender + ", Character Personality: " + personality;
+        return "Name: " + name + ", Look: " + look + ", Gender: " + gender + ", Personality: " + personality;
     }
 }
