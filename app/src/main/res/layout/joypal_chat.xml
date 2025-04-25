@@ -8,18 +8,15 @@
     android:background="#FFFDEE"
     tools:context=".ui.getstart">
 
-    <!-- oc头像 -->
-
     <!-- 底部导航栏 -->
 
     <ImageView
         android:id="@+id/oc_image_container"
         android:layout_width="250dp"
         android:layout_height="333.33dp"
-        android:layout_marginBottom="264dp"
+        android:layout_marginBottom="384dp"
         android:background="#FFFFFF"
         android:scaleType="centerCrop"
-
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
@@ -44,24 +41,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 输入框容器 -->
-
-    <TextView
-        android:id="@+id/feedback_text"
+    <android.widget.ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="28dp"
-        android:background="@android:color/transparent"
-        android:gravity="center"
-        android:text=""
-        android:textColor="#000000"
-        android:visibility="invisible"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/oc_image_container"
         app:layout_constraintBottom_toTopOf="@id/user_input_container"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:scrollbars="vertical"
+        android:layout_marginTop="40dp"> <!-- 显式启用垂直滚动条 -->
+
+        <!-- TextView 显示反馈内容 -->
+        <TextView
+            android:id="@+id/feedback_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="Now you can chat with me."
+            android:textColor="#000000"
+            android:visibility="visible"
+            android:gravity="center"
+            android:textSize="18sp" />
+    </android.widget.ScrollView>
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/user_input_container"
@@ -76,8 +80,6 @@
         android:layout_marginBottom="20dp">
 
         <!-- 用户输入框 -->
-
-        <!-- 发送按钮 -->
         <EditText
             android:id="@+id/user_input"
             android:layout_width="match_parent"
