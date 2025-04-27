@@ -34,6 +34,8 @@ public class joypal_chat extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.joypal_chat);
+        // 初始化导航栏
+        setupBottomNavigationView();
 
         // 初始化 UI 元素
         userInput = findViewById(R.id.user_input);
@@ -56,9 +58,15 @@ public class joypal_chat extends AppCompatActivity {
                 }
             }
         });
+    }
 
-        // 初始化导航栏
-        setupBottomNavigationView();
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // 确保导航栏选中状态更新
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.menu_joypal);
     }
 
     /**
@@ -116,7 +124,7 @@ public class joypal_chat extends AppCompatActivity {
             }
         } else {
             imageView.setImageDrawable(null); // 设置为空白
-            }
+        }
     }
 
     /**
@@ -142,7 +150,8 @@ public class joypal_chat extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.menu_joypal) {
-                return true; // 当前已经是 Joypal 页面，无需跳转
+                // 保持当前页面，确保 Joypal 图标高亮
+                return true;
             } else if (itemId == R.id.menu_settings) {
                 Intent intent = new Intent(joypal_chat.this, settings.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);

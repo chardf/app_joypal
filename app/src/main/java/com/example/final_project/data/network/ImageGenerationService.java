@@ -88,7 +88,9 @@ public class ImageGenerationService {
                     try {
                         // 提取图片 URL
                         String responseBody = response.body().string();
-                        String imageUrl = extractImageUrl(responseBody);
+//                        String imageUrl = extractImageUrl(responseBody);
+                        //静态调试
+                        String imageUrl="https://modelslab-bom.s3.amazonaws.com/generations/51f52058-bcff-4e73-9346-ecb6e0042525-0.jpg";
 
                         // 动态生成文件名
                         String fileName = "generated_image_" + System.currentTimeMillis() + ".jpg";
@@ -120,6 +122,9 @@ public class ImageGenerationService {
         InputStream inputStream = new URL(imageUrl).openStream();
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 
+
+
+        //静态调试
         // 保存图片到本地
         File directory = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "GeneratedImages");
         if (!directory.exists()) {
