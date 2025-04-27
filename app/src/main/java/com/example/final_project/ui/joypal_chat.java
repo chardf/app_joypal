@@ -35,11 +35,18 @@ public class joypal_chat extends AppCompatActivity {
         sendButton = findViewById(R.id.send_button);
         feedbackText = findViewById(R.id.feedback_text);
         ImageView imageView = findViewById(R.id.oc_image_container);
+        TextView nameTextView = findViewById(R.id.oc_name_text); // 初始化角色名 TextView
 
         // 获取传递的图片路径
         Intent intent = getIntent();
         String imagePath = intent.getStringExtra("imagePath");
-
+        String roleName = intent.getStringExtra("roleName");
+    // 显示角色名
+        if (roleName != null) {
+            nameTextView.setText(roleName);
+        } else {
+            nameTextView.setText("Unknown Character");
+        }
         // 显示图片
         if (imagePath != null) {
             File imageFile = new File(imagePath);
@@ -58,7 +65,7 @@ public class joypal_chat extends AppCompatActivity {
             if (!isProcessing) {
                 String inputText = userInput.getText().toString().trim();
                 if (!inputText.isEmpty()) {
-                    sendUserMessage(inputText);
+                    sendUserMessage(inputText,roleName);
                 } else {
                     Toast.makeText(joypal_chat.this, "请输入内容后再发送！", Toast.LENGTH_SHORT).show();
                 }
@@ -110,11 +117,11 @@ public class joypal_chat extends AppCompatActivity {
     /**
      * 发送用户消息并处理响应
      */
-    private void sendUserMessage(String userMessage) {
+    private void sendUserMessage(String userMessage,String roleName) {
         isProcessing = true; // 设置为正在处理状态
         sendButton.setVisibility(View.INVISIBLE); // 隐藏发送按钮
         feedbackText.setVisibility(View.VISIBLE); // 显示透明框
-        feedbackText.setText("Joypal 正在思考..."); // 显示思考提示
+        feedbackText.setText(roleName + " 正在思考..." ); // 显示思考提示
 
         // 调用网络请求服务
         KimiChatApiService.sendMessage(userMessage, new KimiChatApiService.KimiChatCallback() {

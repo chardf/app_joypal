@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.application") // Android 应用插件
 }
 
 android {
@@ -14,6 +14,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments.put("room.schemaLocation", "$projectDir/schemas")
+            }
+        }
     }
 
     buildTypes {
@@ -27,28 +33,34 @@ android {
     }
 
     compileOptions {
-        // 使用正确的 JavaVersion 枚举值
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    // Packaging options to resolve META-INF conflicts
     packagingOptions {
-        exclude("META-INF/DEPENDENCIES")
-        exclude("META-INF/LICENSE")
-        exclude("META-INF/NOTICE")
+        resources.excludes.addAll(
+            listOf("META-INF/DEPENDENCIES", "META-INF/LICENSE", "META-INF/NOTICE")
+        )
     }
 }
 
 dependencies {
-    implementation(libs.appcompat)
-    implementation(libs.material)
-    implementation(libs.activity)
-    implementation(libs.constraintlayout)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
+    implementation(libs.appcompat.v161)
+    implementation(libs.material.v190)
+    implementation(libs.constraintlayout.v214)
 
-    // Add okhttp dependency
-    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    // Room 依赖
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler) // 注解处理器
+
+    // Glide 依赖
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
+
+    // OkHttp 依赖
+    implementation(libs.okhttp)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.junit.v115)
+    androidTestImplementation(libs.espresso.core.v351)
 }

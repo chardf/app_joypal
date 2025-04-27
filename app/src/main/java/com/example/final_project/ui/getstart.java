@@ -2,71 +2,51 @@ package com.example.final_project.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import android.widget.Toast;
+
 import com.google.android.material.button.MaterialButton;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 
 import com.example.final_project.R;
+import com.example.final_project.database.AppDatabase;
+import com.example.final_project.data.model.Entity.ImageRoleEntity;
+
+import java.util.List;
 
 public class getstart extends AppCompatActivity {
+
+    private AppDatabase appDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.launch);
 
-        // 初始化导航栏
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        setupBottomNavigationView(bottomNavigationView);
-
-        // 设置默认选中项为 Home
-        bottomNavigationView.setSelectedItemId(R.id.menu_home);
+        // 初始化数据库
+        appDatabase = AppDatabase.getDatabase(this);
 
         // 初始化 "开始" 按钮
         MaterialButton nextButton = findViewById(R.id.button1); // 确保使用正确的按钮ID
         nextButton.setOnClickListener(view -> {
-            // 创建 Intent 跳转到 PersonalityDesign 页面
-            Intent intent = new Intent(getstart.this, personality_design.class); // 修正为正确的上下文
-            startActivity(intent); // 启动新页面
+            checkRoleDataAndNavigate();
         });
     }
 
-    private void setupBottomNavigationView(BottomNavigationView bottomNavigationView) {
-        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-            Intent intent;
-            int itemId = item.getItemId();
-            if (itemId == R.id.menu_home) {
-                // 当前已经是 Home 页面，无需跳转
-                return true;
-            } else if (itemId == R.id.menu_create) {
-                // 跳转到 Create 页面
-                intent = new Intent(getstart.this, Create_Joypet.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    private void checkRoleDataAndNavigate() {
+        LiveData<List<ImageRoleEntity>> roleListLiveData = appDatabase.imageRoleDao().getAll();
+        roleListLiveData.observe(this, roleList -> {
+            if (roleList != null && !roleList.isEmpty()) {
+                // 如果有角色数据，跳转到 RolesListActivity
+                Intent intent = new Intent(getstart.this, RolesListActivity.class);
                 startActivity(intent);
-                return true;
-            } else if (itemId == R.id.menu_joypal) {
-                // 跳转到 Joypal 页面
-                intent = new Intent(getstart.this, joypal_chat.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            } else {
+                // 如果没有角色数据，跳转到 Create_Joypet 页面
+                Intent intent = new Intent(getstart.this, Create_Joypet.class);
                 startActivity(intent);
-                return true;
-            } else if (itemId == R.id.menu_settings) {
-                // 跳转到 Settings 页面
-                intent = new Intent(getstart.this, settings.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                return true;
             }
-            return false;
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // 确保导航栏状态与页面一致
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.menu_home);
     }
 }

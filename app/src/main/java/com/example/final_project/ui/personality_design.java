@@ -39,20 +39,22 @@ public class personality_design extends AppCompatActivity {
         setupInputListeners();
 
         // 设置 Next 按钮的点击事件
+
         nextButton.setOnClickListener(v -> {
             if (nextButton.isEnabled()) {
-                // 获取组合后的字符串
+                // 获取角色名和组合后的字符串
+                String roleName = nameEditText.getText().toString().trim(); // 获取角色名
                 String userInput = combineInputsAsString();
 
                 // 跳转到 oc_loading 页面并传递用户输入
                 Intent intent = new Intent(personality_design.this, oc_loading.class);
                 intent.putExtra("userInput", userInput); // 将用户输入传递到 oc_loading 页面
+                intent.putExtra("roleName", roleName);  // 传递角色名
                 startActivity(intent);
 
                 finish();
             }
         });
-
         setupBottomNavigationView();
     }
 
