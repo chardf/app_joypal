@@ -13,11 +13,11 @@
 
     <!-- 按钮 -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button1"
+        android:id="@+id/button_clear"
         android:layout_width="300dp"
         android:layout_height="58dp"
         android:layout_marginBottom="16dp"
-        android:text="@string/button"
+        android:text="@string/button_clear"
         android:translationY="-70sp"
         app:backgroundTint="#044132"
         app:cornerRadius="29dp"

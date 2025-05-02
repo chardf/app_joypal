@@ -32,4 +32,8 @@ public interface ImageRoleDao {
     // 根据ID查询记录
     @Query("SELECT * FROM image_role WHERE id = :id")
     LiveData<ImageRoleEntity> getById(int id);
+
+    // 删除所有记录
+    @Query("DELETE FROM image_role")
+    void deleteAll();
 }
