@@ -36,4 +36,10 @@ public interface ImageRoleDao {
     // 删除所有记录
     @Query("DELETE FROM image_role")
     void deleteAll();
+
+    @Query("SELECT * FROM image_role")
+    List<ImageRoleEntity> getAllSync();
+
+    @Query("SELECT COUNT(*) FROM image_role")
+    int getCount();
 }

@@ -1,8 +1,10 @@
 package com.example.final_project.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -112,12 +114,18 @@ public class oc_loading extends AppCompatActivity {
     }
     private void saveToDatabase(String imagePath, String roleName) {
         executorService.execute(() -> {
-            // 获取数据库实例
-            AppDatabase db = AppDatabase.getDatabase(oc_loading.this);
-
-            // 创建 ImageRoleEntity 并插入到数据库
-            ImageRoleEntity entity = new ImageRoleEntity(imagePath, roleName);
-            db.imageRoleDao().insert(entity);
+            try {
+                // 获取数据库实例
+                AppDatabase db = AppDatabase.getDatabase(oc_loading.this);
+                
+                // 创建实体并插入
+                ImageRoleEntity entity = new ImageRoleEntity(imagePath, roleName);
+                db.imageRoleDao().insert(entity);
+                
+                Log.d("oc_loading", "保存到数据库 - 角色名: " + roleName + ", 图片路径: " + imagePath);
+            } catch (Exception e) {
+                Log.e("oc_loading", "保存数据时出错: " + e.getMessage());
+            }
         });
     }
     @Override

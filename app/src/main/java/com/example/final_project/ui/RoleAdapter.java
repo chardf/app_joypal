@@ -15,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
+import android.util.Log;
+
 public class RoleAdapter extends RecyclerView.Adapter<RoleAdapter.RoleViewHolder> {
 
     private final List<ImageRoleEntity> roleList;
@@ -33,11 +35,19 @@ public class RoleAdapter extends RecyclerView.Adapter<RoleAdapter.RoleViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull RoleViewHolder holder, int position) {
-        // Bind the data for each page in ViewPager2
         ImageRoleEntity role = roleList.get(position);
-        Glide.with(holder.itemView.getContext())
-                .load(role.getImagePath())
-                .into(holder.roleImage);
+        Log.d("RoleAdapter", "绑定角色 - 位置: " + position + 
+                            ", 角色名: " + role.getRoleName() + 
+                            ", 图片路径: " + role.getImagePath());
+        
+        // 加载图片
+        if (role.getImagePath() != null && !role.getImagePath().isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(role.getImagePath())
+                    .into(holder.roleImage);
+        } else {
+            Log.e("RoleAdapter", "图片路径为空");
+        }
     }
 
     @Override
@@ -58,13 +68,11 @@ public class RoleAdapter extends RecyclerView.Adapter<RoleAdapter.RoleViewHolder
     }
 
     static class RoleViewHolder extends RecyclerView.ViewHolder {
-        TextView roleName; // Role name
         ImageView roleImage; // Role image
 
         public RoleViewHolder(@NonNull View itemView) {
             super(itemView);
             // Initialize views
-            roleName = itemView.findViewById(R.id.role_name_text);
             roleImage = itemView.findViewById(R.id.role_image_view);
         }
     }

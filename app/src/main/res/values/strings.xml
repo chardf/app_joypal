@@ -3,6 +3,7 @@
     <string name="joypal">JoyPal</string>
     <string name="character_c">Character Creator</string>
     <string name="button">Get Start</string>
+    <string name="button_login">Login</string>
     <string name="button_clear">Clear All Roles</string>
 
     <string name="button_design">Design Joypal</string>

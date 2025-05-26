@@ -60,4 +60,11 @@ public class Create_Joypet extends AppCompatActivity {
 
 
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        // 确保在返回时正确清理资源
+        finish();
+    }
 }

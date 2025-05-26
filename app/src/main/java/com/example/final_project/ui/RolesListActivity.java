@@ -1,12 +1,14 @@
 package com.example.final_project.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -20,9 +22,14 @@ import com.example.final_project.viewmodel.RolesListViewModel;
 import com.example.final_project.viewmodel.RolesListViewModelFactory;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RolesListActivity extends AppCompatActivity {
+
+    private static final String PREFS_NAME = "RolePreferences";
+    private static final String KEY_ROLE_NAME = "roleName";
+    private static final String KEY_IMAGE_PATH = "imagePath";
 
     private ViewPager2 viewPager2;
     private TextView roleNameTextTop; // Top TextView for role name
@@ -43,22 +50,8 @@ public class RolesListActivity extends AppCompatActivity {
         nextRoleButton = findViewById(R.id.next_role_button);
         beginButton = findViewById(R.id.start_chat_button); // 初始化 Begin 按钮
 
-        // Initialize ViewModel
-        AppDatabase database = AppDatabase.getDatabase(this);
-        ImageRoleDao imageRoleDao = database.imageRoleDao();
-        RolesListViewModelFactory factory = new RolesListViewModelFactory(imageRoleDao);
-        rolesListViewModel = new ViewModelProvider(this, factory).get(RolesListViewModel.class);
-
-        // Fetch role list and set up adapter
-        rolesListViewModel.getRoleList().observe(this, this::setupAdapter);
-
-        rolesListViewModel.getRoleList().observe(this, roleList -> {
-            if (roleList != null) {
-                for (ImageRoleEntity role : roleList) {
-                    Log.d("RolesListActivity", "Role: " + role.getRoleName() + ", ImagePath: " + role.getImagePath());
-                }
-            }
-        });
+        // 从 SharedPreferences 加载角色信息
+        loadRoleInfo();
 
         setupBottomNavigationView();
 
@@ -67,6 +60,15 @@ public class RolesListActivity extends AppCompatActivity {
 
         // 设置 Begin 按钮点击事件
         setupBeginButton();
+    }
+
+    private void loadRoleInfo() {
+        // 直接从数据库加载所有角色
+        AppDatabase database = AppDatabase.getDatabase(this);
+        ImageRoleDao imageRoleDao = database.imageRoleDao();
+        RolesListViewModelFactory factory = new RolesListViewModelFactory(imageRoleDao);
+        rolesListViewModel = new ViewModelProvider(this, factory).get(RolesListViewModel.class);
+        rolesListViewModel.getRoleList().observe(this, this::setupAdapter);
     }
 
     /**
@@ -132,12 +134,18 @@ public class RolesListActivity extends AppCompatActivity {
      */
     private void setupBeginButton() {
         beginButton.setOnClickListener(v -> {
-            // 获取当前选中的角色
             int currentItem = viewPager2.getCurrentItem();
             if (roleAdapter != null && roleAdapter.getItemCount() > 0) {
                 ImageRoleEntity selectedRole = roleAdapter.getRoleAt(currentItem);
+                
+                // 保存到 SharedPreferences
+                SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putString(KEY_ROLE_NAME, selectedRole.getRoleName());
+                editor.putString(KEY_IMAGE_PATH, selectedRole.getImagePath());
+                editor.apply();
 
-                // 跳转到 joypal_chat 页面并传递角色信息
+                // 跳转到聊天界面
                 Intent intent = new Intent(RolesListActivity.this, joypal_chat.class);
                 intent.putExtra("roleName", selectedRole.getRoleName());
                 intent.putExtra("imagePath", selectedRole.getImagePath());
@@ -147,24 +155,29 @@ public class RolesListActivity extends AppCompatActivity {
     }
 
     private void setupAdapter(List<ImageRoleEntity> roleList) {
+        Log.d("RolesListActivity", "设置适配器 - 角色列表大小: " + (roleList != null ? roleList.size() : 0));
+        
         if (roleList != null && !roleList.isEmpty()) {
-            // Initialize adapter
             roleAdapter = new RoleAdapter(roleList);
             viewPager2.setAdapter(roleAdapter);
-
-            // Set initial role name
-            roleNameTextTop.setText(roleList.get(0).getRoleName());
-
-            // Listen for page change events
+            
+            // 设置初始角色名
+            ImageRoleEntity firstRole = roleList.get(0);
+            Log.d("RolesListActivity", "设置初始角色名: " + firstRole.getRoleName());
+            roleNameTextTop.setText(firstRole.getRoleName());
+            
+            // 设置页面切换监听
             viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
                 @Override
                 public void onPageSelected(int position) {
                     super.onPageSelected(position);
-
-                    // Update top role name
-                    roleNameTextTop.setText(roleList.get(position).getRoleName());
+                    ImageRoleEntity currentRole = roleList.get(position);
+                    Log.d("RolesListActivity", "页面切换 - 当前角色: " + currentRole.getRoleName());
+                    roleNameTextTop.setText(currentRole.getRoleName());
                 }
             });
+        } else {
+            Log.e("RolesListActivity", "角色列表为空或为null");
         }
     }
 }
