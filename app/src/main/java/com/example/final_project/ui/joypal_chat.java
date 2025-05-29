@@ -17,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.final_project.R;
 import com.example.final_project.data.network.KimiChatApiService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 
 import java.io.File;
 
@@ -29,6 +31,7 @@ public class joypal_chat extends AppCompatActivity {
     private EditText userInput; // 用户输入框
     private ImageView sendButton; // 发送按钮
     private TextView feedbackText; // 显示 Joypal 回复的透明框
+    private ImageView loadingGifView; // 加载 GIF 的 ImageView
     private boolean isProcessing = false; // 是否正在处理用户输入
 
     @Override
@@ -42,6 +45,7 @@ public class joypal_chat extends AppCompatActivity {
         userInput = findViewById(R.id.user_input);
         sendButton = findViewById(R.id.send_button);
         feedbackText = findViewById(R.id.feedback_text);
+        loadingGifView = findViewById(R.id.loading_gif_view); // 初始化加载 GIF 的 ImageView
         ImageView imageView = findViewById(R.id.oc_image_container);
         TextView nameTextView = findViewById(R.id.oc_name_text); // 初始化角色名 TextView
 
@@ -57,6 +61,8 @@ public class joypal_chat extends AppCompatActivity {
                 } else {
                     Toast.makeText(joypal_chat.this, "请输入内容后再发送！", Toast.LENGTH_SHORT).show();
                 }
+            } else {
+                // 防止重复点击
             }
         });
     }
@@ -67,7 +73,10 @@ public class joypal_chat extends AppCompatActivity {
 
         // 确保导航栏选中状态更新
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.menu_joypal);
+        // 检查 bottomNavigationView 是否为 null，避免崩溃
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.menu_joypal);
+        }
     }
 
     /**
@@ -122,9 +131,10 @@ public class joypal_chat extends AppCompatActivity {
                 imageView.setImageBitmap(bitmap);
             } else {
                 Toast.makeText(this, "Image file does not exist!", Toast.LENGTH_SHORT).show();
+                imageView.setImageDrawable(null); // 文件不存在则设置为空白
             }
         } else {
-            imageView.setImageDrawable(null); // 设置为空白
+            imageView.setImageDrawable(null); // 路径为空则设置为空白
         }
     }
 
@@ -133,6 +143,12 @@ public class joypal_chat extends AppCompatActivity {
      */
     private void setupBottomNavigationView() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        // 检查 bottomNavigationView 是否为 null，避免崩溃
+        if (bottomNavigationView == null) {
+            Log.e("joypal_chat", "BottomNavigationView not found!");
+            return;
+        }
 
         // 设置导航栏图标的默认选择项为 "Joypal"
         bottomNavigationView.setSelectedItemId(R.id.menu_joypal);
@@ -169,14 +185,28 @@ public class joypal_chat extends AppCompatActivity {
     private void sendUserMessage(String userMessage, String roleName) {
         isProcessing = true; // 设置为正在处理状态
         sendButton.setVisibility(View.INVISIBLE); // 隐藏发送按钮
-        feedbackText.setVisibility(View.VISIBLE); // 显示透明框
-        feedbackText.setText(roleName + " 正在思考..."); // 显示思考提示
+
+        // 隐藏 feedbackText，显示加载 GIF
+        feedbackText.setVisibility(View.GONE);
+        if (loadingGifView != null) {
+            loadingGifView.setVisibility(View.VISIBLE);
+            // 使用 Glide 加载 GIF 动画，确保你的加载 GIF 文件名为 loading_animation.gif 并且在 drawable 目录下
+            Glide.with(this)
+                .asGif()
+                .load(R.drawable.loading) // 确保有这个drawable资源
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .into(loadingGifView);
+        }
 
         // 调用网络请求服务
         KimiChatApiService.sendMessage(userMessage, new KimiChatApiService.KimiChatCallback() {
             @Override
             public void onSuccess(String reply) {
                 runOnUiThread(() -> {
+                    // 隐藏加载 GIF，显示 feedbackText
+                    if (loadingGifView != null) loadingGifView.setVisibility(View.GONE);
+                    feedbackText.setVisibility(View.VISIBLE);
+
                     feedbackText.setText(reply); // 显示 API 返回的内容
                     sendButton.setVisibility(View.VISIBLE); // 重新显示发送按钮
                     isProcessing = false; // 重置处理状态
@@ -186,6 +216,10 @@ public class joypal_chat extends AppCompatActivity {
             @Override
             public void onFailure(String errorMessage) {
                 runOnUiThread(() -> {
+                    // 隐藏加载 GIF，显示 feedbackText
+                    if (loadingGifView != null) loadingGifView.setVisibility(View.GONE);
+                    feedbackText.setVisibility(View.VISIBLE);
+
                     feedbackText.setText("出现错误，请重试！");
                     Toast.makeText(joypal_chat.this, errorMessage, Toast.LENGTH_SHORT).show();
                     sendButton.setVisibility(View.VISIBLE); // 重新显示发送按钮
