@@ -1,62 +1,105 @@
 package com.example.final_project.ui;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ImageView;
+import android.os.Environment;
+import android.os.Build;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.final_project.R;
 import com.example.final_project.data.model.Entity.ImageRoleEntity;
 import com.example.final_project.data.network.ImageGenerationService;
 import com.example.final_project.database.AppDatabase;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class oc_loading extends AppCompatActivity {
+    private static final String TAG = "oc_loading";
+    private static final int PERMISSION_REQUEST_CODE = 1001;
+    private static final String[] REQUIRED_PERMISSIONS = {
+        Manifest.permission.READ_MEDIA_IMAGES
+    };
 
-    private ProgressBar progressBar; // 水平进度条
-    private TextView loadTextView; // 显示进度的 TextView
-    private String userInput; // 从上一个页面传递的用户输入
-    private String roleName; // 从上一个页面传递的角色名称
-    private Handler handler; // 用于更新进度和模拟
-    private int progress = 0; // 当前进度值
-    private Runnable progressUpdater; // 用于模拟进度更新
+    private ProgressBar progressBar;
+    private TextView loadTextView;
+    private String userInput;
+    private String roleName;
+    private Handler handler;
+    private int progress = 0;
+    private Runnable progressUpdater;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private ImageGenerationService imageGenerationService;
+    private ImageView gifImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.oc_loading);
 
-        // 初始化视图
-        progressBar = findViewById(R.id.static_progress_bar);
-        loadTextView = findViewById(R.id.load);
+        try {
+            // 检查网络连接
+            if (!isNetworkAvailable()) {
+                Toast.makeText(this, "请检查网络连接", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
 
-        // 获取从 personality_design 页面传递的用户输入和角色名称
-        Intent intent = getIntent();
-        userInput = intent.getStringExtra("userInput");
-        roleName = intent.getStringExtra("roleName"); // 获取角色名称
+            // 初始化视图
+            progressBar = findViewById(R.id.static_progress_bar);
+            loadTextView = findViewById(R.id.load);
+            gifImage = findViewById(R.id.gif_image);
 
-        // 初始化 Handler 和 ImageGenerationService
-        handler = new Handler();
-        imageGenerationService = new ImageGenerationService();
+            // 获取从 personality_design 页面传递的用户输入和角色名称
+            Intent intent = getIntent();
+            userInput = intent.getStringExtra("userInput");
+            roleName = intent.getStringExtra("roleName");
 
-        // 设置进度初始值
-        loadTextView.setText("0%");
+            // 初始化 Handler 和 ImageGenerationService
+            handler = new Handler();
+            imageGenerationService = new ImageGenerationService();
 
-        // 开始模拟进度更新
-        startProgressSimulation();
+            // 设置进度初始值
+            loadTextView.setText("0%");
 
-        // 调用图片生成逻辑
-        generateImage(userInput);
+            // 开始模拟进度更新
+            startProgressSimulation();
+
+            // 检查权限并加载GIF
+            checkPermissionsAndLoadGif();
+        } catch (Exception e) {
+            Log.e(TAG, "onCreate error: " + e.getMessage());
+            Toast.makeText(this, "初始化失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        }
+        return false;
     }
 
     private void startProgressSimulation() {
@@ -128,10 +171,102 @@ public class oc_loading extends AppCompatActivity {
             }
         });
     }
+
+    private void checkPermissionsAndLoadGif() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13及以上版本使用 READ_MEDIA_IMAGES 权限
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) 
+                    == PackageManager.PERMISSION_GRANTED) {
+                loadGif();
+            } else {
+                ActivityCompat.requestPermissions(this, 
+                    new String[]{Manifest.permission.READ_MEDIA_IMAGES}, 
+                    PERMISSION_REQUEST_CODE);
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11-12 使用 READ_EXTERNAL_STORAGE 权限
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) 
+                    == PackageManager.PERMISSION_GRANTED) {
+                loadGif();
+            } else {
+                ActivityCompat.requestPermissions(this, 
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 
+                    PERMISSION_REQUEST_CODE);
+            }
+        } else {
+            // Android 10及以下版本使用传统存储权限
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) 
+                    == PackageManager.PERMISSION_GRANTED) {
+                loadGif();
+            } else {
+                ActivityCompat.requestPermissions(this, 
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 
+                    PERMISSION_REQUEST_CODE);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (allGranted) {
+                loadGif();
+            } else {
+                Toast.makeText(this, "需要存储权限才能继续", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+    }
+
+    private void loadGif() {
+        try {
+            RequestOptions requestOptions = new RequestOptions()
+                .centerCrop()
+                .dontAnimate()
+                .skipMemoryCache(true)
+                .diskCacheStrategy(DiskCacheStrategy.NONE);
+
+            Glide.with(this)
+                .asGif()
+                .load(R.drawable.getstart)
+                .apply(requestOptions)
+                .transition(DrawableTransitionOptions.withCrossFade(300))
+                .error(R.drawable.logo)
+                .into(gifImage);
+
+            // 开始生成图片
+            if (userInput != null && !userInput.isEmpty()) {
+                generateImage(userInput);
+            } else {
+                Toast.makeText(this, "无效的用户输入", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "loadGif error: " + e.getMessage());
+            gifImage.setImageResource(R.drawable.logo);
+            if (userInput != null && !userInput.isEmpty()) {
+                generateImage(userInput);
+            }
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // 确保在页面销毁时移除回调，避免内存泄漏
-        handler.removeCallbacksAndMessages(null);
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+        if (executorService != null) {
+            executorService.shutdown();
+        }
     }
 }

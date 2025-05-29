@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,6 +38,7 @@ public class Login extends AppCompatActivity {
         userIdEditText = findViewById(R.id.userIdEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.button_login);
+        TextView registerText = findViewById(R.id.register_text);
 
         // 设置登录按钮点击事件
         loginButton.setOnClickListener(view -> {
@@ -48,6 +50,13 @@ public class Login extends AppCompatActivity {
                 // 目前为了演示，我们直接进行跳转
                 checkRoleDataAndNavigate();
             }
+        });
+
+        // 设置注册文本点击事件
+        registerText.setOnClickListener(v -> {
+            // 跳转到注册界面
+            Intent intent = new Intent(Login.this, Register.class);
+            startActivity(intent);
         });
     }
 

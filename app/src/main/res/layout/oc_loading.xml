@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFDEE"
-    tools:context=".ui.getstart">
+    tools:context=".ui.oc_loading">
 
     <!-- 内容区域 -->
 
@@ -18,8 +19,9 @@
         android:layout_height="50dp"
         android:layout_marginTop="180dp"
         android:gravity="center"
-        android:text="@string/joypal"
-        android:textAppearance="@style/joypal"
+        android:text="JoyPal"
+        android:textSize="24sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,8 +35,8 @@
         android:layout_marginTop="260dp"
         android:gravity="center_horizontal|top"
         android:lineSpacingExtra="9sp"
-        android:text="@string/joypal_gene"
-        android:textAppearance="@style/joypal_gene"
+        android:text="正在生成你的角色..."
+        android:textSize="18sp"
         android:translationY="-4.54sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -68,6 +70,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.5" />
+
+    <!-- GIF动画ImageView -->
+    <ImageView
+        android:id="@+id/gif_image"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="40dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/load" />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         style="@style/BottomNavigationViewStyle"

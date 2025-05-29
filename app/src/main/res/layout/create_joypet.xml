@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFDEE"
-    tools:context=".ui.getstart">
+    tools:context=".ui.Create_Joypet">
 
     <!-- 内容区域 -->
     <TextView
@@ -22,8 +22,6 @@
         android:textSize="40dp"
         android:layout_marginTop="200dp" />
 
-
-
     <TextView
         android:id="@+id/create_first_joypal"
         android:layout_width="wrap_content"
@@ -34,17 +32,28 @@
         android:textAppearance="@style/carterone"
         android:textColor="#000000"
         android:textSize="17sp"
-
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/create_joypal" />
 
+    <!-- GIF动画ImageView -->
+    <ImageView
+        android:id="@+id/gif_image"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="40dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/create_first_joypal" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_design"
         android:layout_width="300dp"
         android:layout_height="58dp"
-        android:layout_marginTop="180dp"
+        android:layout_marginTop="40dp"
         android:backgroundTint="@null"
         android:text="@string/button_design"
         android:textAppearance="@style/button"
@@ -54,10 +63,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_first_joypal"
+        app:layout_constraintTop_toBottomOf="@id/gif_image"
         app:rippleColor="#80FFFFFF"
         app:strokeColor="#2C2C2C"
         app:strokeWidth="2dp" />
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#CCCCCC"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
@@ -66,14 +85,8 @@
         android:layout_height="100dp"
         app:backgroundTint="#FFFDEE"
         app:labelVisibilityMode="unlabeled"
+        app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:background="#CCCCCC"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

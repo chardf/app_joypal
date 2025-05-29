@@ -42,10 +42,11 @@
                 android:id="@+id/userIdEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:minHeight="48dp"
                 android:hint="User ID"
                 android:inputType="text"
                 android:maxLength="20"
-                android:padding="12dp"
+                android:padding="16dp"
                 android:textColor="@android:color/black" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -54,7 +55,7 @@
             android:id="@+id/input_layout_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="8dp"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:passwordToggleEnabled="true">
 
@@ -62,12 +63,29 @@
                 android:id="@+id/passwordEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:minHeight="48dp"
                 android:hint="Password"
                 android:inputType="textPassword"
                 android:maxLength="20"
-                android:padding="12dp"
+                android:padding="16dp"
                 android:textColor="@android:color/black" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Register Text -->
+        <TextView
+            android:id="@+id/register_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:minHeight="48dp"
+            android:padding="10dp"
+            android:text="Register"
+            android:textColor="#044132"
+            android:textSize="14sp" />
 
     </LinearLayout>
 
@@ -77,7 +95,7 @@
         android:layout_width="0dp"
         android:layout_height="58dp"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="16dp"
         android:text="Login"
         app:backgroundTint="#044132"
         app:cornerRadius="29dp"

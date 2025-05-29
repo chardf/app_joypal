@@ -20,6 +20,7 @@ import com.example.final_project.R;
 import com.example.final_project.database.AppDatabase;
 import com.example.final_project.data.model.Entity.ImageRoleEntity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
 
@@ -44,6 +45,13 @@ public class settings extends AppCompatActivity {
         // 初始化并绑定测试按钮
         Button testButton = findViewById(R.id.test_button);
         testButton.setOnClickListener(v -> checkStoredData());
+
+        // 设置修改密码按钮点击事件
+        MaterialButton changePasswordButton = findViewById(R.id.button_change_password);
+        changePasswordButton.setOnClickListener(v -> {
+            Intent intent = new Intent(settings.this, ChangePassword.class);
+            startActivity(intent);
+        });
 
         // 在onCreate方法中添加
         checkAndRequestPermissions();

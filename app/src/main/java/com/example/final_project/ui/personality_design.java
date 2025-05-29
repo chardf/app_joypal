@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.final_project.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -121,22 +122,19 @@ public class personality_design extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.menu_home) {
-                // 跳转到 Home 页面
                 Intent intent = new Intent(personality_design.this, getstart.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.menu_create) {
-                // 跳转到 Create 页面
-                Intent intent = new Intent(personality_design.this, Create_Joypet.class);
+                // 当前页面就是 Create，不做操作
+                return true;
+            } else if (itemId == R.id.menu_joypal) {
+                Intent intent = new Intent(personality_design.this, joypal_chat.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
-            } else if (itemId == R.id.menu_joypal) {
-                // 当前已经是 Joypal 页面，无需跳转
-                return true;
-            } else if (itemId == R.id.menu_settings) {
-                // 跳转到 Settings 页面
+            } else if (itemId == R.id.menu_settings) { // 注意这里的 ID，确保和你的菜单文件一致
                 Intent intent = new Intent(personality_design.this, settings.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);

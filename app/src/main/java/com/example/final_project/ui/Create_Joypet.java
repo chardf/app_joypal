@@ -67,4 +67,9 @@ public class Create_Joypet extends AppCompatActivity {
         // 确保在返回时正确清理资源
         finish();
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }

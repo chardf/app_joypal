@@ -58,6 +58,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- 修改密码按钮 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_change_password"
+        android:layout_width="300dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="16dp"
+        android:text="Change Password"
+        app:backgroundTint="#044132"
+        app:cornerRadius="29dp"
+        app:iconPadding="8dp"
+        app:rippleColor="#80FFFFFF"
+        app:strokeColor="#2C2C2C"
+        app:strokeWidth="2dp"
+        android:textAppearance="@style/button"
+        app:layout_constraintTop_toBottomOf="@id/test_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- 分割线 -->
     <View
         android:id="@+id/divider"
