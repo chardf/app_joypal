@@ -54,7 +54,6 @@
 
     <!-- GIF 图片 -->
 
-
     <ImageView
         android:id="@+id/gif_image"
         android:layout_width="200dp"

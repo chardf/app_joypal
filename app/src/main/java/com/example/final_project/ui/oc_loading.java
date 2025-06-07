@@ -23,7 +23,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.final_project.R;
 import com.example.final_project.data.model.Entity.ImageRoleEntity;
-import com.example.final_project.data.network.ImageGenerationService;
+import com.example.final_project.data.network.JoyImageGenerationService;
 import com.example.final_project.database.AppDatabase;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
@@ -48,7 +48,7 @@ public class oc_loading extends AppCompatActivity {
     private int progress = 0;
     private Runnable progressUpdater;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private ImageGenerationService imageGenerationService;
+    private JoyImageGenerationService imageGenerationService;
     private ImageView gifImage;
 
     @Override
@@ -74,9 +74,9 @@ public class oc_loading extends AppCompatActivity {
             userInput = intent.getStringExtra("userInput");
             roleName = intent.getStringExtra("roleName");
 
-            // 初始化 Handler 和 ImageGenerationService
+            // 初始化 Handler 和 JoyImageGenerationService
             handler = new Handler();
-            imageGenerationService = new ImageGenerationService();
+            imageGenerationService = new JoyImageGenerationService();
 
             // 设置进度初始值
             loadTextView.setText("0%");
@@ -118,10 +118,10 @@ public class oc_loading extends AppCompatActivity {
     }
 
     private void generateImage(String prompt) {
-        // 调用 ImageGenerationService 开始生成图片
-        imageGenerationService.generateImage(this, prompt, new ImageGenerationService.ImageGenerationCallback() {
+        // 调用 JoyImageGenerationService 开始生成图片
+        imageGenerationService.JoygenerateImage(this, prompt, new JoyImageGenerationService.ImageGenerationCallback() {
             @Override
-            public void onSuccess(String imagePath, String fileName) {
+            public void onSuccess(String characterName, String imagePath) {
                 // 图片生成成功
                 runOnUiThread(() -> {
                     // 停止模拟进度并设置为 100%
@@ -129,14 +129,14 @@ public class oc_loading extends AppCompatActivity {
                     progressBar.setProgress(100);
                     loadTextView.setText("100%"); // 动态更新 TextView
                     // 保存到数据库
-                    saveToDatabase(imagePath, roleName);
+                    saveToDatabase(imagePath, characterName);
 
                     Toast.makeText(oc_loading.this, "Image saved successfully!", Toast.LENGTH_SHORT).show();
 
                     // 跳转到结果页面
                     Intent intent = new Intent(oc_loading.this, joypal_chat.class);
                     intent.putExtra("imagePath", imagePath); // 传递生成的图片路径
-                    intent.putExtra("roleName", roleName); // 传递角色名称
+                    intent.putExtra("roleName", characterName); // 传递角色名称
                     startActivity(intent);
 
                     // 结束当前页面
@@ -155,6 +155,7 @@ public class oc_loading extends AppCompatActivity {
             }
         });
     }
+
     private void saveToDatabase(String imagePath, String roleName) {
         executorService.execute(() -> {
             try {

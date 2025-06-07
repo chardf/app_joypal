@@ -32,32 +32,27 @@ public class JoyImageGenerationService {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final OkHttpClient httpClient = new OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS) // 设置连接超时时间为 30 秒
-            .readTimeout(60, TimeUnit.SECONDS)    // 设置读取超时时间为 30 秒
-            .writeTimeout(60, TimeUnit.SECONDS)   // 设置写入超时时间为 30 秒
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
             .build();
 
     public interface ImageGenerationCallback {
-        void onSuccess(String characterName, String imagePath); // 返回角色名称和图片路径
+        void onSuccess(String characterName, String imagePath);
         void onFailure(String errorMessage);
     }
 
-    // 发送 POST 请求生成图片
     public void JoygenerateImage(Context context, String inputString, ImageGenerationCallback callback) {
         try {
-            // 将输入字符串转换为符合 API 要求的 JSON 格式
             JSONObject requestBody = convertToJson(inputString);
-
             RequestBody body = RequestBody.create(requestBody.toString(), JSON);
 
-            // 创建请求
             Request request = new Request.Builder()
                     .url(API_URL)
                     .post(body)
                     .addHeader("Content-Type", "application/json")
                     .build();
 
-            // 异步执行请求
             httpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
@@ -69,17 +64,13 @@ public class JoyImageGenerationService {
                 public void onResponse(Call call, Response response) throws IOException {
                     if (response.isSuccessful()) {
                         try {
-                            // 解析响应 JSON
                             String responseBody = response.body().string();
                             JSONObject jsonResponse = new JSONObject(responseBody);
 
                             String characterName = jsonResponse.getString("character_name");
-                            String imagePath = jsonResponse.getString("image_path");
+                            String imageUrl = jsonResponse.getString("image_url");
 
-                            // 下载图片并保存到本地（可选）
-                            String localImagePath = downloadAndSaveImage(context, imagePath, characterName);
-
-                            // 回调成功，返回角色名称和本地图片路径
+                            String localImagePath = downloadAndSaveImage(context, imageUrl, characterName);
                             callback.onSuccess(characterName, localImagePath);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -96,7 +87,6 @@ public class JoyImageGenerationService {
         }
     }
 
-    // 将输入字符串转换为符合 API 要求的 JSON 格式
     private JSONObject convertToJson(String inputString) throws Exception {
         JSONObject requestBody = new JSONObject();
         JSONArray descriptionArray = new JSONArray();
@@ -106,8 +96,25 @@ public class JoyImageGenerationService {
         for (String part : parts) {
             String[] keyValue = part.split(": ", 2);
             if (keyValue.length == 2) {
+                String key = keyValue[0].trim();
+                String value = keyValue[1].trim();
+                
+                // 根据不同的键创建对应的JSON对象
                 JSONObject descriptionItem = new JSONObject();
-                descriptionItem.put(keyValue[0].trim(), keyValue[1].trim());
+                switch (key) {
+                    case "Name":
+                        descriptionItem.put("Name", value);
+                        break;
+                    case "Gender":
+                        descriptionItem.put("Gender", value);
+                        break;
+                    case "Personality":
+                        descriptionItem.put("Personality", value);
+                        break;
+                    case "Look":
+                        descriptionItem.put("Appearance", value);
+                        break;
+                }
                 descriptionArray.put(descriptionItem);
             }
         }
@@ -116,22 +123,20 @@ public class JoyImageGenerationService {
         return requestBody;
     }
 
-    // 下载图片并保存到本地
     private String downloadAndSaveImage(Context context, String imageUrl, String fileName) throws Exception {
         InputStream inputStream = new URL(imageUrl).openStream();
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 
-        // 保存图片到本地
         File directory = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "GeneratedImages");
         if (!directory.exists()) {
-            directory.mkdirs(); // 创建目录
+            directory.mkdirs();
         }
 
-        File imageFile = new File(directory, fileName + ".jpg"); // 使用角色名作为文件名
+        File imageFile = new File(directory, fileName + ".jpg");
         FileOutputStream outputStream = new FileOutputStream(imageFile);
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream); // 保存为 JPEG 格式
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
         outputStream.close();
 
-        return imageFile.getAbsolutePath(); // 返回图片完整路径
+        return imageFile.getAbsolutePath();
     }
 }

@@ -5,78 +5,233 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.inputmethod.EditorInfo;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.final_project.R;
 import com.example.final_project.data.network.KimiChatApiService;
+import com.example.final_project.data.model.ChatMessage;
+import com.example.final_project.data.model.ChatResponse;
+import com.example.final_project.data.database.DatabaseHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.airbnb.lottie.LottieAnimationView;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class joypal_chat extends AppCompatActivity {
 
     private static final String PREFS_NAME = "RolePreferences";
     private static final String KEY_ROLE_NAME = "roleName";
-    private static final String KEY_IMAGE_PATH = "imagePath";
+    private static final String KEY_IMAGE_PATH = "image_path";
+    private static final String TAG = "joypal_chat";
+    private static final String KEY_CHARACTER_NAME = "character_name";
+    private static final String KEY_CHAT_HISTORY = "chat_history";
 
-    private EditText userInput; // 用户输入框
-    private ImageView sendButton; // 发送按钮
-    private TextView feedbackText; // 显示 Joypal 回复的透明框
-    private ImageView loadingGifView; // 加载 GIF 的 ImageView
-    private boolean isProcessing = false; // 是否正在处理用户输入
+    private ImageView ocImageView;
+    private TextView chatTextView;
+    private EditText messageInput;
+    private ImageView sendButton;
+    private ScrollView scrollView;
+    private LottieAnimationView loadingAnimation;
+    private String characterName;
+    private String imagePath;
+    private DatabaseHelper databaseHelper;
+    private List<ChatMessage> chatHistory;
+    private Handler mainHandler;
+    private final AtomicBoolean isDestroyed = new AtomicBoolean(false);
+    private final AtomicBoolean isPaused = new AtomicBoolean(false);
+    private final AtomicBoolean isFinishing = new AtomicBoolean(false);
+    private final AtomicBoolean isWaitingForResponse = new AtomicBoolean(false);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.joypal_chat);
-        // 初始化导航栏
-        setupBottomNavigationView();
 
-        // 初始化 UI 元素
-        userInput = findViewById(R.id.user_input);
-        sendButton = findViewById(R.id.send_button);
-        feedbackText = findViewById(R.id.feedback_text);
-        loadingGifView = findViewById(R.id.loading_gif_view); // 初始化加载 GIF 的 ImageView
-        ImageView imageView = findViewById(R.id.oc_image_container);
-        TextView nameTextView = findViewById(R.id.oc_name_text); // 初始化角色名 TextView
+        try {
+            // 初始化导航栏
+            setupBottomNavigationView();
 
-        // 加载角色信息
-        loadRoleInfo(nameTextView, imageView);
+            // 初始化视图
+            ocImageView = findViewById(R.id.oc_image_container);
+            chatTextView = findViewById(R.id.feedback_text);
+            messageInput = findViewById(R.id.user_input);
+            sendButton = findViewById(R.id.send_button);
+            scrollView = findViewById(R.id.scrollView);
+            loadingAnimation = findViewById(R.id.loading_gif_view);
 
-        // 设置发送按钮点击事件
-        sendButton.setOnClickListener(v -> {
-            if (!isProcessing) {
-                String inputText = userInput.getText().toString().trim();
-                if (!inputText.isEmpty()) {
-                    sendUserMessage(inputText, nameTextView.getText().toString());
-                } else {
-                    Toast.makeText(joypal_chat.this, "请输入内容后再发送！", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                // 防止重复点击
+            // 检查必要的视图是否都找到了
+            if (ocImageView == null || chatTextView == null || messageInput == null || 
+                sendButton == null || scrollView == null || loadingAnimation == null) {
+                throw new IllegalStateException("Some required views are missing");
             }
-        });
+
+            // 初始化服务
+            databaseHelper = new DatabaseHelper(this);
+            mainHandler = new Handler(Looper.getMainLooper());
+            chatHistory = new ArrayList<>();
+
+            // 恢复保存的状态
+            if (savedInstanceState != null) {
+                characterName = savedInstanceState.getString(KEY_CHARACTER_NAME);
+                imagePath = savedInstanceState.getString(KEY_IMAGE_PATH);
+            }
+
+            // 如果没有保存的状态，从Intent获取
+            if (characterName == null || imagePath == null) {
+                Intent intent = getIntent();
+                if (intent != null) {
+                    characterName = intent.getStringExtra("roleName");
+                    imagePath = intent.getStringExtra("imagePath");
+                }
+            }
+
+            // 如果仍然没有角色信息，尝试从SharedPreferences获取
+            if (characterName == null || imagePath == null) {
+                SharedPreferences prefs = getSharedPreferences("RolePrefs", MODE_PRIVATE);
+                characterName = prefs.getString("lastRoleName", null);
+                imagePath = prefs.getString("lastImagePath", null);
+            }
+
+            // 如果仍然没有角色信息，返回角色列表页面
+            if (characterName == null || imagePath == null) {
+                Toast.makeText(this, "请先选择一个角色", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, RolesListActivity.class));
+                finish();
+                return;
+            }
+
+            // 保存当前角色信息
+            SharedPreferences.Editor editor = getSharedPreferences("RolePrefs", MODE_PRIVATE).edit();
+            editor.putString("lastRoleName", characterName);
+            editor.putString("lastImagePath", imagePath);
+            editor.apply();
+
+            // 加载角色信息
+            TextView nameTextView = findViewById(R.id.oc_name_text);
+            if (nameTextView != null) {
+                loadRoleInfo(nameTextView, ocImageView);
+            }
+
+            // 加载聊天历史
+            loadChatHistory();
+
+            // 初始化动画
+            try {
+                loadingAnimation.setAnimation("chat_load.json");
+                loadingAnimation.setVisibility(View.GONE);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to load animation", e);
+                loadingAnimation.setVisibility(View.GONE);
+            }
+
+            // 设置发送按钮点击事件
+            sendButton.setOnClickListener(v -> sendUserMessage());
+
+            // 设置输入框回车发送
+            messageInput.setOnEditorActionListener((v, actionId, event) -> {
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    sendUserMessage();
+                    return true;
+                }
+                return false;
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error in onCreate", e);
+            Toast.makeText(this, "初始化失败，请重试", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        try {
+            outState.putString(KEY_CHARACTER_NAME, characterName);
+            outState.putString(KEY_IMAGE_PATH, imagePath);
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving instance state", e);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        try {
+            if (savedInstanceState != null) {
+                characterName = savedInstanceState.getString(KEY_CHARACTER_NAME);
+                imagePath = savedInstanceState.getString(KEY_IMAGE_PATH);
+                loadRoleInfo(findViewById(R.id.oc_name_text), findViewById(R.id.oc_image_container));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error restoring instance state", e);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        isDestroyed.set(true);
+        super.onDestroy();
+        if (mainHandler != null) {
+            mainHandler.removeCallbacksAndMessages(null);
+        }
+        if (databaseHelper != null) {
+            databaseHelper.close();
+        }
+        isWaitingForResponse.set(false);
+    }
+
+    @Override
+    protected void onPause() {
+        isPaused.set(true);
+        super.onPause();
+        if (isFinishing.get()) {
+            if (mainHandler != null) {
+                mainHandler.removeCallbacksAndMessages(null);
+            }
+        }
+        if (databaseHelper != null) {
+            databaseHelper.close();
+        }
+        isWaitingForResponse.set(false);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        // 确保导航栏选中状态更新
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        // 检查 bottomNavigationView 是否为 null，避免崩溃
-        if (bottomNavigationView != null) {
-            bottomNavigationView.setSelectedItemId(R.id.menu_joypal);
+        if (isFinishing.get()) {
+            return;
         }
+        isPaused.set(false);
+        if (databaseHelper == null) {
+            databaseHelper = new DatabaseHelper(this);
+        }
+        loadChatHistory();
+        isWaitingForResponse.set(false);
+        setInputEnabled(true);
+    }
+
+    @Override
+    public void finish() {
+        isFinishing.set(true);
+        super.finish();
     }
 
     /**
@@ -94,7 +249,6 @@ public class joypal_chat extends AppCompatActivity {
         if (newRoleName != null && newImagePath != null) {
             // 如果有新角色信息，优先加载新信息并保存到 SharedPreferences
             updateRoleInfo(newRoleName, newImagePath, nameTextView, imageView);
-            saveRoleInfo(newRoleName, newImagePath);
         } else {
             // 如果没有新信息，从 SharedPreferences 加载上一次保存的角色信息
             String savedRoleName = preferences.getString(KEY_ROLE_NAME, "Unknown Character");
@@ -146,7 +300,7 @@ public class joypal_chat extends AppCompatActivity {
 
         // 检查 bottomNavigationView 是否为 null，避免崩溃
         if (bottomNavigationView == null) {
-            Log.e("joypal_chat", "BottomNavigationView not found!");
+            Log.e(TAG, "BottomNavigationView not found!");
             return;
         }
 
@@ -179,53 +333,162 @@ public class joypal_chat extends AppCompatActivity {
         });
     }
 
-    /**
-     * 发送用户消息并处理响应
-     */
-    private void sendUserMessage(String userMessage, String roleName) {
-        isProcessing = true; // 设置为正在处理状态
-        sendButton.setVisibility(View.INVISIBLE); // 隐藏发送按钮
-
-        // 隐藏 feedbackText，显示加载 GIF
-        feedbackText.setVisibility(View.GONE);
-        if (loadingGifView != null) {
-            loadingGifView.setVisibility(View.VISIBLE);
-            // 使用 Glide 加载 GIF 动画，确保你的加载 GIF 文件名为 loading_animation.gif 并且在 drawable 目录下
-            Glide.with(this)
-                .asGif()
-                .load(R.drawable.loading) // 确保有这个drawable资源
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(loadingGifView);
+    private void loadChatHistory() {
+        if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
+        
+        try {
+            chatHistory = databaseHelper.getChatHistory(characterName);
+            updateChatDisplay();
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading chat history", e);
+            chatHistory = new ArrayList<>();
         }
+    }
 
-        // 调用网络请求服务
-        KimiChatApiService.sendMessage(userMessage, new KimiChatApiService.KimiChatCallback() {
-            @Override
-            public void onSuccess(String reply) {
-                runOnUiThread(() -> {
-                    // 隐藏加载 GIF，显示 feedbackText
-                    if (loadingGifView != null) loadingGifView.setVisibility(View.GONE);
-                    feedbackText.setVisibility(View.VISIBLE);
-
-                    feedbackText.setText(reply); // 显示 API 返回的内容
-                    sendButton.setVisibility(View.VISIBLE); // 重新显示发送按钮
-                    isProcessing = false; // 重置处理状态
-                });
-            }
-
-            @Override
-            public void onFailure(String errorMessage) {
-                runOnUiThread(() -> {
-                    // 隐藏加载 GIF，显示 feedbackText
-                    if (loadingGifView != null) loadingGifView.setVisibility(View.GONE);
-                    feedbackText.setVisibility(View.VISIBLE);
-
-                    feedbackText.setText("出现错误，请重试！");
-                    Toast.makeText(joypal_chat.this, errorMessage, Toast.LENGTH_SHORT).show();
-                    sendButton.setVisibility(View.VISIBLE); // 重新显示发送按钮
-                    isProcessing = false; // 重置处理状态
-                });
+    private void setInputEnabled(boolean enabled) {
+        if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
+        
+        mainHandler.post(() -> {
+            try {
+                if (messageInput != null) {
+                    messageInput.setEnabled(enabled);
+                    messageInput.setAlpha(enabled ? 1.0f : 0.5f);
+                }
+                if (sendButton != null) {
+                    sendButton.setEnabled(enabled);
+                    sendButton.setAlpha(enabled ? 1.0f : 0.5f);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error setting input state", e);
             }
         });
+    }
+
+    private void sendUserMessage() {
+        if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
+        
+        String message = messageInput.getText().toString().trim();
+        if (message.isEmpty()) return;
+
+        try {
+            // 检查是否正在等待响应
+            if (isWaitingForResponse.get()) {
+                Toast.makeText(this, "请等待上一条消息的回复", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 设置等待状态
+            isWaitingForResponse.set(true);
+            setInputEnabled(false);
+            
+            // 清空输入框
+            messageInput.setText("");
+            
+            // 创建用户消息
+            long timestamp = System.currentTimeMillis();
+            ChatMessage userMessage = new ChatMessage(characterName, message, true, timestamp);
+            
+            // 保存到数据库
+            databaseHelper.saveChatMessage(userMessage);
+            
+            // 添加到聊天历史
+            chatHistory.add(userMessage);
+            
+            // 更新显示
+            updateChatDisplay();
+            
+            // 显示加载动画
+            if (loadingAnimation != null) {
+                loadingAnimation.setVisibility(View.VISIBLE);
+                loadingAnimation.playAnimation();
+            }
+            
+            // 发送到服务器
+            KimiChatApiService.sendMessage(message, new KimiChatApiService.KimiChatCallback() {
+                @Override
+                public void onSuccess(String reply) {
+                    if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
+                    
+                    mainHandler.post(() -> {
+                        try {
+                            // 隐藏加载动画
+                            if (loadingAnimation != null) {
+                                loadingAnimation.setVisibility(View.GONE);
+                                loadingAnimation.cancelAnimation();
+                            }
+                            
+                            // 创建AI回复消息
+                            ChatMessage aiMessage = new ChatMessage(characterName, reply, false, System.currentTimeMillis());
+                            
+                            // 保存到数据库
+                            databaseHelper.saveChatMessage(aiMessage);
+                            
+                            // 添加到聊天历史
+                            chatHistory.add(aiMessage);
+                            
+                            // 更新显示
+                            updateChatDisplay();
+
+                            // 重置等待状态
+                            isWaitingForResponse.set(false);
+                            setInputEnabled(true);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error handling AI response", e);
+                            // 发生错误时也要重置状态
+                            isWaitingForResponse.set(false);
+                            setInputEnabled(true);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(String error) {
+                    if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
+                    
+                    mainHandler.post(() -> {
+                        try {
+                            // 隐藏加载动画
+                            if (loadingAnimation != null) {
+                                loadingAnimation.setVisibility(View.GONE);
+                                loadingAnimation.cancelAnimation();
+                            }
+                            Toast.makeText(joypal_chat.this, "发送失败: " + error, Toast.LENGTH_SHORT).show();
+                            
+                            // 重置等待状态
+                            isWaitingForResponse.set(false);
+                            setInputEnabled(true);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error showing error toast", e);
+                            // 发生错误时也要重置状态
+                            isWaitingForResponse.set(false);
+                            setInputEnabled(true);
+                        }
+                    });
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error sending message", e);
+            Toast.makeText(this, "发送失败，请重试", Toast.LENGTH_SHORT).show();
+            // 发生错误时也要重置状态
+            isWaitingForResponse.set(false);
+            setInputEnabled(true);
+        }
+    }
+
+    private void updateChatDisplay() {
+        if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
+
+        StringBuilder chatText = new StringBuilder();
+        for (ChatMessage message : chatHistory) {
+            if (message.isUserMessage()) {
+                chatText.append("You: ").append(message.getMessage()).append("\n\n");
+            } else {
+                chatText.append(characterName).append(": ").append(message.getMessage()).append("\n\n");
+            }
+        }
+        chatTextView.setText(chatText.toString());
+
+        // 滚动到底部
+        scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
     }
 }

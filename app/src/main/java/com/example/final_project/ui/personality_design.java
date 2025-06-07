@@ -109,7 +109,7 @@ public class personality_design extends AppCompatActivity {
         String gender = genderEditText.getText().toString().trim();
         String personality = personalityEditText.getText().toString().trim();
 
-        return "Name: " + name + ", Look: " + look + ", Gender: " + gender + ", Personality: " + personality;
+        return "Name: " + name + ", Gender: " + gender + ", Personality: " + personality + ", Look: " + look;
     }
 
     private void setupBottomNavigationView() {
@@ -146,19 +146,16 @@ public class personality_design extends AppCompatActivity {
 
     private void setupSkipButton() {
         skip.setOnClickListener(v -> {
-            // 默认跳过生成的字符串
-            String defaultUserInput = "Name: Alice, Look: pretty and blue short hair, Gender: female, Personality: cool";
+            // 传递空数据
+            String emptyUserInput = "Name: , Gender: , Personality: , Look: ";
 
-            // 默认角色名
-            String defaultRoleName = "Alice";
-
-            // 跳转到 oc_loading 页面并传递默认的用户输入
+            // 跳转到 oc_loading 页面并传递空数据
             Intent intent = new Intent(personality_design.this, oc_loading.class);
-            intent.putExtra("userInput", defaultUserInput); // 将默认用户输入传递到 oc_loading 页面
-            intent.putExtra("roleName", defaultRoleName);  // 传递默认角色名
+            intent.putExtra("userInput", emptyUserInput);
+            intent.putExtra("roleName", "");  // 传递空字符串，让后端决定角色名
             startActivity(intent);
 
-            finish(); // 结束当前页面
+            finish();
         });
     }
 }

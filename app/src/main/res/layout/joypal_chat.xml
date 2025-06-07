@@ -82,18 +82,20 @@
             android:textSize="18sp" />
     </android.widget.ScrollView>
 
-    <!-- 加载 GIF 的 ImageView -->
-    <ImageView
+    <!-- 加载动画 -->
+    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/loading_gif_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="16dp"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="@id/scrollView"
-        app:layout_constraintBottom_toBottomOf="@id/scrollView"
-        app:layout_constraintStart_toStartOf="@id/scrollView"
-        app:layout_constraintEnd_toEndOf="@id/scrollView"
-        android:layout_gravity="center"
-        />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/feedback_text"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_fileName="chat_load.json"
+        tools:ignore="NotSibling" />
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
