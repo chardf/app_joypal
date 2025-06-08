@@ -9,6 +9,10 @@ import android.view.View;
 import android.os.CountDownTimer;
 import android.widget.Button;
 import android.view.ViewGroup;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.widget.LinearLayout;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -20,15 +24,14 @@ import androidx.lifecycle.Observer;
 import com.example.final_project.R;
 import com.example.final_project.database.AppDatabase;
 import com.example.final_project.data.model.Entity.ImageRoleEntity;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.airbnb.lottie.LottieAnimationView;
 
 import java.util.List;
 
 public class getstart extends AppCompatActivity {
 
     private AppDatabase appDatabase;
-    private ImageView gifImage;
+    private LottieAnimationView gifImage;
     private Button startButton;
     private BottomNavigationView bottomNavigationView;
     private ImageView loadingGifView;
@@ -68,8 +71,11 @@ public class getstart extends AppCompatActivity {
             setupBottomNavigation(bottomNavigationView);
         }
 
-        // 加载 GIF
-        loadGif();
+        // 初始化动画
+        if (gifImage != null) {
+            gifImage.setAnimation("homeAnimation.lottie");
+            gifImage.playAnimation();
+        }
 
         // 开始检查角色数据
         checkRoleDataAndNavigate();
@@ -171,23 +177,15 @@ public class getstart extends AppCompatActivity {
         });
     }
 
-    // loadGif 方法如果用到了，需要确保 gifImage 视图存在于 R.layout.launch 中
-    private void loadGif() {
-        if (gifImage != null) {
-            Glide.with(this)
-                .asGif()
-                .load(R.drawable.getstart) // 确保有这个drawable资源
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(gifImage);
-        }
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (countDownTimer != null) {
             countDownTimer.cancel();
             countDownTimer = null;
+        }
+        if (gifImage != null) {
+            gifImage.cancelAnimation();
         }
     }
 }
