@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.example.final_project.data.DAO.ImageRoleDao;
 import com.example.final_project.data.model.Entity.ImageRoleEntity;
 
-@Database(entities = {ImageRoleEntity.class}, version = 1, exportSchema = true)
+@Database(entities = {ImageRoleEntity.class}, version = 2, exportSchema = true)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase INSTANCE;
@@ -21,7 +21,11 @@ public abstract class AppDatabase extends RoomDatabase {
     private static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
-            // 如果需要迁移，在这里添加迁移逻辑
+            // 添加新列
+            database.execSQL("ALTER TABLE image_role ADD COLUMN name TEXT");
+            database.execSQL("ALTER TABLE image_role ADD COLUMN gender TEXT");
+            database.execSQL("ALTER TABLE image_role ADD COLUMN personality TEXT");
+            database.execSQL("ALTER TABLE image_role ADD COLUMN appearance TEXT");
         }
     };
 
@@ -32,6 +36,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     AppDatabase.class, "app_database")
+                            .addMigrations(MIGRATION_1_2) // 添加迁移策略
                             .fallbackToDestructiveMigration() // 如果迁移失败，重建数据库
                             .build();
                 }

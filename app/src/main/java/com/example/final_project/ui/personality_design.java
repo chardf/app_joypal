@@ -43,14 +43,21 @@ public class personality_design extends AppCompatActivity {
 
         nextButton.setOnClickListener(v -> {
             if (nextButton.isEnabled()) {
-                // 获取角色名和组合后的字符串
-                String roleName = nameEditText.getText().toString().trim(); // 获取角色名
+                // 获取所有输入字段
+                String name = nameEditText.getText().toString().trim();
+                String look = lookEditText.getText().toString().trim();
+                String gender = genderEditText.getText().toString().trim();
+                String personality = personalityEditText.getText().toString().trim();
                 String userInput = combineInputsAsString();
 
-                // 跳转到 oc_loading 页面并传递用户输入
+                // 跳转到 oc_loading 页面并传递所有信息
                 Intent intent = new Intent(personality_design.this, oc_loading.class);
-                intent.putExtra("userInput", userInput); // 将用户输入传递到 oc_loading 页面
-                intent.putExtra("roleName", roleName);  // 传递角色名
+                intent.putExtra("userInput", userInput);
+                intent.putExtra("roleName", name);
+                intent.putExtra("name", name);
+                intent.putExtra("look", look);
+                intent.putExtra("gender", gender);
+                intent.putExtra("personality", personality);
                 startActivity(intent);
 
                 finish();
@@ -152,7 +159,11 @@ public class personality_design extends AppCompatActivity {
             // 跳转到 oc_loading 页面并传递空数据
             Intent intent = new Intent(personality_design.this, oc_loading.class);
             intent.putExtra("userInput", emptyUserInput);
-            intent.putExtra("roleName", "");  // 传递空字符串，让后端决定角色名
+            intent.putExtra("roleName", "");
+            intent.putExtra("name", "");
+            intent.putExtra("look", "");
+            intent.putExtra("gender", "");
+            intent.putExtra("personality", "");
             startActivity(intent);
 
             finish();

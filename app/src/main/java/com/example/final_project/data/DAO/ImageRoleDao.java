@@ -8,15 +8,7 @@ import com.example.final_project.data.model.Entity.ImageRoleEntity;
 
 import java.util.List;
 
-
 import androidx.lifecycle.LiveData;
-import androidx.room.Dao;
-import androidx.room.Insert;
-import androidx.room.Query;
-
-import com.example.final_project.data.model.Entity.ImageRoleEntity;
-
-import java.util.List;
 
 @Dao
 public interface ImageRoleDao {
@@ -32,6 +24,10 @@ public interface ImageRoleDao {
     // 根据ID查询记录
     @Query("SELECT * FROM image_role WHERE id = :id")
     LiveData<ImageRoleEntity> getById(int id);
+
+    // 根据角色名查询记录
+    @Query("SELECT * FROM image_role WHERE roleName = :roleName LIMIT 1")
+    ImageRoleEntity getRoleByName(String roleName);
 
     // 删除所有记录
     @Query("DELETE FROM image_role")

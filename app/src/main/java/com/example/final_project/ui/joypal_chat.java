@@ -2,43 +2,37 @@ package com.example.final_project.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.inputmethod.EditorInfo;
+import android.view.Gravity;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 
 import com.example.final_project.R;
+import com.example.final_project.data.network.JoyTextGenerationService;
 import com.example.final_project.data.network.KimiChatApiService;
 import com.example.final_project.data.model.ChatMessage;
-import com.example.final_project.data.model.ChatResponse;
 import com.example.final_project.data.database.DatabaseHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.bumptech.glide.Glide;
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.final_project.data.database.AppDatabase;
 import com.example.final_project.data.model.Entity.ImageRoleEntity;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 
 public class joypal_chat extends AppCompatActivity {
 
@@ -55,8 +49,8 @@ public class joypal_chat extends AppCompatActivity {
     private ImageView sendButton;
     private ScrollView scrollView;
     private LottieAnimationView loadingAnimation;
-    private String characterName;
-    private String imagePath;
+    private AtomicReference<String> characterName = new AtomicReference<>();
+    private AtomicReference<String> imagePath = new AtomicReference<>();
     private DatabaseHelper databaseHelper;
     private List<ChatMessage> chatHistory;
     private Handler mainHandler;
@@ -83,8 +77,8 @@ public class joypal_chat extends AppCompatActivity {
             loadingAnimation = findViewById(R.id.loading_gif_view);
 
             // 检查必要的视图是否都找到了
-            if (ocImageView == null || chatTextView == null || messageInput == null || 
-                sendButton == null || scrollView == null || loadingAnimation == null) {
+            if (ocImageView == null || chatTextView == null || messageInput == null ||
+                    sendButton == null || scrollView == null || loadingAnimation == null) {
                 throw new IllegalStateException("Some required views are missing");
             }
 
@@ -95,36 +89,36 @@ public class joypal_chat extends AppCompatActivity {
 
             // 恢复保存的状态
             if (savedInstanceState != null) {
-                characterName = savedInstanceState.getString(KEY_CHARACTER_NAME);
-                imagePath = savedInstanceState.getString(KEY_IMAGE_PATH);
+                characterName.set(savedInstanceState.getString(KEY_CHARACTER_NAME));
+                imagePath.set(savedInstanceState.getString(KEY_IMAGE_PATH));
             }
 
             // 如果没有保存的状态，从Intent获取
-            if (characterName == null || imagePath == null) {
+            if (characterName.get() == null || imagePath.get() == null) {
                 Intent intent = getIntent();
                 if (intent != null) {
-                    characterName = intent.getStringExtra("roleName");
-                    imagePath = intent.getStringExtra("imagePath");
+                    characterName.set(intent.getStringExtra("roleName"));
+                    imagePath.set(intent.getStringExtra("imagePath"));
                 }
             }
 
             // 如果仍然没有角色信息，尝试从SharedPreferences获取
-            if (characterName == null || imagePath == null) {
+            if (characterName.get() == null || imagePath.get() == null) {
                 SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-                characterName = prefs.getString(KEY_ROLE_NAME, null);
-                imagePath = prefs.getString(KEY_IMAGE_PATH, null);
+                characterName.set(prefs.getString(KEY_ROLE_NAME, null));
+                imagePath.set(prefs.getString(KEY_IMAGE_PATH, null));
             }
 
             // 如果仍然没有角色信息，尝试从数据库获取最新的角色
-            if (characterName == null || imagePath == null) {
+            if (characterName.get() == null || imagePath.get() == null) {
                 loadRoleInfo();
                 return;
             }
 
             // 保存当前角色信息
             SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
-            editor.putString(KEY_ROLE_NAME, characterName);
-            editor.putString(KEY_IMAGE_PATH, imagePath);
+            editor.putString(KEY_ROLE_NAME, characterName.get());
+            editor.putString(KEY_IMAGE_PATH, imagePath.get());
             editor.apply();
 
             // 加载角色信息
@@ -164,8 +158,8 @@ public class joypal_chat extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         try {
-            outState.putString(KEY_CHARACTER_NAME, characterName);
-            outState.putString(KEY_IMAGE_PATH, imagePath);
+            outState.putString(KEY_CHARACTER_NAME, characterName.get());
+            outState.putString(KEY_IMAGE_PATH, imagePath.get());
         } catch (Exception e) {
             Log.e(TAG, "Error saving instance state", e);
         }
@@ -176,8 +170,8 @@ public class joypal_chat extends AppCompatActivity {
         super.onRestoreInstanceState(savedInstanceState);
         try {
             if (savedInstanceState != null) {
-                characterName = savedInstanceState.getString(KEY_CHARACTER_NAME);
-                imagePath = savedInstanceState.getString(KEY_IMAGE_PATH);
+                characterName.set(savedInstanceState.getString(KEY_CHARACTER_NAME));
+                imagePath.set(savedInstanceState.getString(KEY_IMAGE_PATH));
                 loadRoleInfo();
             }
         } catch (Exception e) {
@@ -246,67 +240,142 @@ public class joypal_chat extends AppCompatActivity {
         // 从SharedPreferences获取角色信息
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String roleName = prefs.getString(KEY_ROLE_NAME, "");
-        String imagePath = prefs.getString(KEY_IMAGE_PATH, "");
+        String savedImagePath = prefs.getString(KEY_IMAGE_PATH, "");
 
-        if (!roleName.isEmpty() && !imagePath.isEmpty()) {
-            // 如果有角色信息，显示角色信息
-            TextView ocNameText = findViewById(R.id.oc_name_text);
-            if (ocNameText != null) {
-                ocNameText.setText(roleName);
-            }
-            Glide.with(this)
-                .load(new File(imagePath))
-                .placeholder(R.drawable.default_avatar)
-                .error(R.drawable.default_avatar)
-                .into(ocImageView);
-            messageInput.setEnabled(true);
-            sendButton.setEnabled(true);
+        Log.d(TAG, "开始加载角色信息");
+        Log.d(TAG, "从SharedPreferences获取 - 角色名: " + roleName + ", 图片路径: " + savedImagePath);
+
+        if (!roleName.isEmpty() && !savedImagePath.isEmpty()) {
+            // 如果有角色信息，从数据库获取完整信息
+            AppDatabase db = AppDatabase.getDatabase(this);
+            new Thread(() -> {
+                try {
+                    Log.d(TAG, "开始查询数据库 - 角色名: " + roleName);
+                    ImageRoleEntity role = db.imageRoleDao().getRoleByName(roleName);
+                    
+                    if (role != null) {
+                        Log.d(TAG, "数据库查询成功 - 角色信息: " + role.toString());
+                        // 使用数据库中的信息更新UI
+                        runOnUiThread(() -> {
+                            TextView ocNameText = findViewById(R.id.oc_name_text);
+                            if (ocNameText != null) {
+                                ocNameText.setText(role.getRoleName());
+                                Log.d(TAG, "更新UI - 角色名: " + role.getRoleName());
+                            }
+                            Glide.with(this)
+                                .load(new File(role.getImagePath()))
+                                .placeholder(R.drawable.default_avatar)
+                                .error(R.drawable.default_avatar)
+                                .into(ocImageView);
+                            messageInput.setEnabled(true);
+                            sendButton.setEnabled(true);
+                        });
+                    } else {
+                        Log.w(TAG, "数据库查询失败 - 未找到角色: " + roleName);
+                        // 如果数据库中没有找到角色，使用 SharedPreferences 中的信息
+                        runOnUiThread(() -> {
+                            TextView ocNameText = findViewById(R.id.oc_name_text);
+                            if (ocNameText != null) {
+                                ocNameText.setText(roleName);
+                                Log.d(TAG, "使用SharedPreferences信息更新UI - 角色名: " + roleName);
+                            }
+                            Glide.with(this)
+                                .load(new File(savedImagePath))
+                                .placeholder(R.drawable.default_avatar)
+                                .error(R.drawable.default_avatar)
+                                .into(ocImageView);
+                            messageInput.setEnabled(true);
+                            sendButton.setEnabled(true);
+                        });
+                        
+                        // 尝试重新保存到数据库
+                        try {
+                            ImageRoleEntity newRole = new ImageRoleEntity(savedImagePath, roleName, "", "", "", "");
+                            db.imageRoleDao().insert(newRole);
+                            Log.d(TAG, "尝试重新保存角色到数据库");
+                        } catch (Exception e) {
+                            Log.e(TAG, "重新保存角色失败", e);
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "加载角色信息时发生错误", e);
+                    // 发生错误时使用 SharedPreferences 中的信息
+                    runOnUiThread(() -> {
+                        TextView ocNameText = findViewById(R.id.oc_name_text);
+                        if (ocNameText != null) {
+                            ocNameText.setText(roleName);
+                            Log.d(TAG, "发生错误后使用SharedPreferences信息 - 角色名: " + roleName);
+                        }
+                        Glide.with(this)
+                            .load(new File(savedImagePath))
+                            .placeholder(R.drawable.default_avatar)
+                            .error(R.drawable.default_avatar)
+                            .into(ocImageView);
+                        messageInput.setEnabled(true);
+                        sendButton.setEnabled(true);
+                    });
+                }
+            }).start();
         } else {
+            Log.d(TAG, "SharedPreferences中没有角色信息，尝试从数据库获取最新角色");
             // 如果没有角色信息，尝试从数据库获取最新的角色
-            DatabaseHelper dbHelper = new DatabaseHelper(this);
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
-            
-            Cursor cursor = db.query(
-                "image_roles",
-                new String[]{"name", "image_path"},
-                null,
-                null,
-                null,
-                null,
-                "id DESC",
-                "1"
-            );
+            AppDatabase db = AppDatabase.getDatabase(this);
+            new Thread(() -> {
+                try {
+                    List<ImageRoleEntity> roles = db.imageRoleDao().getAllSync();
+                    Log.d(TAG, "数据库中共有 " + (roles != null ? roles.size() : 0) + " 个角色");
+                    
+                    if (roles != null && !roles.isEmpty()) {
+                        ImageRoleEntity latestRole = roles.get(roles.size() - 1);
+                        Log.d(TAG, "使用最新角色: " + latestRole.toString());
+                        
+                        // 使用 AtomicReference 更新值
+                        characterName.set(latestRole.getRoleName());
+                        imagePath.set(latestRole.getImagePath());
+                        
+                        runOnUiThread(() -> {
+                            TextView ocNameText = findViewById(R.id.oc_name_text);
+                            if (ocNameText != null) {
+                                ocNameText.setText(latestRole.getRoleName());
+                                Log.d(TAG, "更新UI - 最新角色名: " + latestRole.getRoleName());
+                            }
+                            Glide.with(this)
+                                .load(new File(latestRole.getImagePath()))
+                                .placeholder(R.drawable.default_avatar)
+                                .error(R.drawable.default_avatar)
+                                .into(ocImageView);
+                            messageInput.setEnabled(true);
+                            sendButton.setEnabled(true);
 
-            if (cursor != null && cursor.moveToFirst()) {
-                String latestRoleName = cursor.getString(cursor.getColumnIndexOrThrow("name"));
-                String latestImagePath = cursor.getString(cursor.getColumnIndexOrThrow("image_path"));
-                
-                TextView ocNameText = findViewById(R.id.oc_name_text);
-                if (ocNameText != null) {
-                    ocNameText.setText(latestRoleName);
+                            // 保存当前角色信息到 SharedPreferences
+                            SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+                            editor.putString(KEY_ROLE_NAME, latestRole.getRoleName());
+                            editor.putString(KEY_IMAGE_PATH, latestRole.getImagePath());
+                            editor.apply();
+                            
+                            Log.d(TAG, "更新SharedPreferences - 最新角色名: " + latestRole.getRoleName() + ", 图片路径: " + latestRole.getImagePath());
+                        });
+                    } else {
+                        Log.w(TAG, "数据库中没有找到任何角色");
+                        runOnUiThread(() -> {
+                            Toast.makeText(this, "未找到任何角色，请先创建一个角色", Toast.LENGTH_SHORT).show();
+                            // 跳转到角色创建页面
+                            Intent intent = new Intent(this, Create_Joypal.class);
+                            startActivity(intent);
+                            finish();
+                        });
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "获取最新角色时发生错误", e);
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "加载角色信息失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        // 跳转到角色创建页面
+                        Intent intent = new Intent(this, Create_Joypal.class);
+                        startActivity(intent);
+                        finish();
+                    });
                 }
-                Glide.with(this)
-                    .load(new File(latestImagePath))
-                    .placeholder(R.drawable.default_avatar)
-                    .error(R.drawable.default_avatar)
-                    .into(ocImageView);
-                messageInput.setEnabled(true);
-                sendButton.setEnabled(true);
-                
-                cursor.close();
-            } else {
-                // 如果数据库中没有角色，显示默认状态
-                TextView ocNameText = findViewById(R.id.oc_name_text);
-                if (ocNameText != null) {
-                    ocNameText.setText("No character now");
-                }
-                Glide.with(this)
-                    .load(R.drawable.default_avatar)
-                    .into(ocImageView);
-                messageInput.setEnabled(false);
-                sendButton.setEnabled(false);
-            }
-            db.close();
+            }).start();
         }
     }
 
@@ -353,11 +422,11 @@ public class joypal_chat extends AppCompatActivity {
 
     private void loadChatHistory() {
         if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
-        
+
         try {
             // 确保使用当前角色的名称加载聊天历史
-            if (characterName != null) {
-                chatHistory = databaseHelper.getChatHistory(characterName);
+            if (characterName.get() != null) {
+                chatHistory = databaseHelper.getChatHistory(characterName.get());
                 updateChatDisplay();
             } else {
                 Log.e(TAG, "Character name is null when loading chat history");
@@ -371,7 +440,7 @@ public class joypal_chat extends AppCompatActivity {
 
     private void setInputEnabled(boolean enabled) {
         if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
-        
+
         mainHandler.post(() -> {
             try {
                 if (messageInput != null) {
@@ -401,6 +470,18 @@ public class joypal_chat extends AppCompatActivity {
                 return;
             }
 
+            // 检查角色名是否有效
+            String currentRoleName = characterName.get();
+            if (currentRoleName == null || currentRoleName.isEmpty() || currentRoleName.equals("44")) {
+                Log.e(TAG, "无效的角色名: " + currentRoleName);
+                Toast.makeText(this, "请先选择一个角色", Toast.LENGTH_SHORT).show();
+                // 跳转到角色选择页面
+                Intent intent = new Intent(this, RolesListActivity.class);
+                startActivity(intent);
+                finish();
+                return;
+            }
+
             // 设置等待状态
             isWaitingForResponse.set(true);
             setInputEnabled(false);
@@ -410,7 +491,7 @@ public class joypal_chat extends AppCompatActivity {
             
             // 创建用户消息
             long timestamp = System.currentTimeMillis();
-            ChatMessage userMessage = new ChatMessage(characterName, message, true, timestamp);
+            ChatMessage userMessage = new ChatMessage(currentRoleName, message, true, timestamp);
             
             // 保存到数据库
             databaseHelper.saveChatMessage(userMessage);
@@ -427,69 +508,116 @@ public class joypal_chat extends AppCompatActivity {
                 loadingAnimation.playAnimation();
             }
 
-            // 发送到服务器
-            KimiChatApiService.sendMessage(message, new KimiChatApiService.KimiChatCallback() {
-                @Override
-                public void onSuccess(String reply) {
-                    if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
+            // 从数据库获取角色完整信息
+            AppDatabase db = AppDatabase.getDatabase(this);
+            new Thread(() -> {
+                try {
+                    Log.d(TAG, "正在查询角色信息，角色名: " + currentRoleName);
+                    ImageRoleEntity role = db.imageRoleDao().getRoleByName(currentRoleName);
                     
-                    mainHandler.post(() -> {
-                        try {
-                            // 隐藏加载动画
-                            if (loadingAnimation != null) {
-                                loadingAnimation.setVisibility(View.GONE);
-                                loadingAnimation.cancelAnimation();
-                            }
-                            
-                            // 创建AI回复消息
-                            ChatMessage aiMessage = new ChatMessage(characterName, reply, false, System.currentTimeMillis());
-                            
-                            // 保存到数据库
-                            databaseHelper.saveChatMessage(aiMessage);
-                            
-                            // 添加到聊天历史
-                            chatHistory.add(aiMessage);
-                            
-                            // 更新显示
-                            updateChatDisplay();
+                    if (role != null) {
+                        Log.d(TAG, "成功获取角色信息: " + role.toString());
+                        // 使用 JoyTextGenerationService 发送请求
+                        JoyTextGenerationService.generateText(
+                            message,
+                            role.getRoleName(),
+                            role.getGender(),
+                            role.getPersonality(),
+                            role.getAppearance(),
+                            new JoyTextGenerationService.TextGenerationCallback() {
+                                @Override
+                                public void onSuccess(String response) {
+                                    if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
+                                    
+                                    mainHandler.post(() -> {
+                                        try {
+                                            // 隐藏加载动画
+                                            if (loadingAnimation != null) {
+                                                loadingAnimation.setVisibility(View.GONE);
+                                                loadingAnimation.cancelAnimation();
+                                            }
+                                            
+                                            // 创建AI回复消息
+                                            ChatMessage aiMessage = new ChatMessage(currentRoleName, response, false, System.currentTimeMillis());
+                                            
+                                            // 保存到数据库
+                                            databaseHelper.saveChatMessage(aiMessage);
+                                            
+                                            // 添加到聊天历史
+                                            chatHistory.add(aiMessage);
+                                            
+                                            // 更新显示
+                                            updateChatDisplay();
 
-                            // 重置等待状态
-                            isWaitingForResponse.set(false);
-                            setInputEnabled(true);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error handling AI response", e);
-                            // 发生错误时也要重置状态
-                            isWaitingForResponse.set(false);
-                            setInputEnabled(true);
+                                            // 重置等待状态
+                                            isWaitingForResponse.set(false);
+                                            setInputEnabled(true);
+                                        } catch (Exception e) {
+                                            Log.e(TAG, "Error handling AI response", e);
+                                            // 发生错误时也要重置状态
+                                            isWaitingForResponse.set(false);
+                                            setInputEnabled(true);
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onFailure(String error) {
+                                    if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
+                                    
+                                    mainHandler.post(() -> {
+                                        try {
+                                            // 隐藏加载动画
+                                            if (loadingAnimation != null) {
+                                                loadingAnimation.setVisibility(View.GONE);
+                                                loadingAnimation.cancelAnimation();
+                                            }
+                                            Toast.makeText(joypal_chat.this, "发送失败: " + error, Toast.LENGTH_SHORT).show();
+                                            
+                                            // 重置等待状态
+                                            isWaitingForResponse.set(false);
+                                            setInputEnabled(true);
+                                        } catch (Exception e) {
+                                            Log.e(TAG, "Error showing error toast", e);
+                                            // 发生错误时也要重置状态
+                                            isWaitingForResponse.set(false);
+                                            setInputEnabled(true);
+                                        }
+                                    });
+                                }
+                            }
+                        );
+                    } else {
+                        Log.e(TAG, "未找到角色信息，角色名: " + currentRoleName);
+                        // 尝试从数据库获取所有角色
+                        List<ImageRoleEntity> allRoles = db.imageRoleDao().getAllSync();
+                        Log.d(TAG, "数据库中的所有角色: " + (allRoles != null ? allRoles.size() : 0));
+                        if (allRoles != null) {
+                            for (ImageRoleEntity r : allRoles) {
+                                Log.d(TAG, "角色: " + r.toString());
+                            }
                         }
+                        
+                        mainHandler.post(() -> {
+                            Toast.makeText(this, "请先创建一个角色", Toast.LENGTH_SHORT).show();
+                            // 跳转到创建角色页面
+                            Intent intent = new Intent(this, Create_Joypal.class);
+                            startActivity(intent);
+                            finish();
+                            isWaitingForResponse.set(false);
+                            setInputEnabled(true);
+                        });
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error getting role info", e);
+                    mainHandler.post(() -> {
+                        Toast.makeText(this, "获取角色信息失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        isWaitingForResponse.set(false);
+                        setInputEnabled(true);
                     });
                 }
+            }).start();
 
-                @Override
-                public void onFailure(String error) {
-                    if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
-                    
-                    mainHandler.post(() -> {
-                        try {
-                            // 隐藏加载动画
-                            if (loadingAnimation != null) {
-                                loadingAnimation.setVisibility(View.GONE);
-                                loadingAnimation.cancelAnimation();
-                            }
-                            Toast.makeText(joypal_chat.this, "发送失败: " + error, Toast.LENGTH_SHORT).show();
-                            
-                            // 重置等待状态
-                            isWaitingForResponse.set(false);
-                            setInputEnabled(true);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error showing error toast", e);
-                            // 发生错误时也要重置状态
-                            isWaitingForResponse.set(false);
-                            setInputEnabled(true);
-                        }
-                    });
-                }
-            });
         } catch (Exception e) {
             Log.e(TAG, "Error sending message", e);
             Toast.makeText(this, "发送失败，请重试", Toast.LENGTH_SHORT).show();
@@ -507,7 +635,7 @@ public class joypal_chat extends AppCompatActivity {
             if (message.isUserMessage()) {
                 chatText.append("You: ").append(message.getMessage()).append("\n\n");
             } else {
-                chatText.append(characterName).append(": ").append(message.getMessage()).append("\n\n");
+                chatText.append(characterName.get()).append(": ").append(message.getMessage()).append("\n\n");
             }
         }
         chatTextView.setText(chatText.toString());

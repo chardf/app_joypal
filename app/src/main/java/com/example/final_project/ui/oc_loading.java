@@ -50,6 +50,11 @@ public class oc_loading extends AppCompatActivity {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private JoyImageGenerationService imageGenerationService;
     private ImageView gifImage;
+    private String currentName;
+    private String currentLook;
+    private String currentGender;
+    private String currentPersonality;
+    private String currentRoleName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,36 +122,52 @@ public class oc_loading extends AppCompatActivity {
         handler.post(progressUpdater);
     }
 
-    private void generateImage(String prompt) {
-        // 调用 JoyImageGenerationService 开始生成图片
-        imageGenerationService.JoygenerateImage(this, prompt, new JoyImageGenerationService.ImageGenerationCallback() {
+    private void generateImage() {
+        // 获取传递过来的所有信息
+        String userInput = getIntent().getStringExtra("userInput");
+        String roleName = getIntent().getStringExtra("roleName");
+        String name = getIntent().getStringExtra("name");
+        String look = getIntent().getStringExtra("look");
+        String gender = getIntent().getStringExtra("gender");
+        String personality = getIntent().getStringExtra("personality");
+
+        // 保存到类成员变量中
+        currentName = name;
+        currentLook = look;
+        currentGender = gender;
+        currentPersonality = personality;
+        currentRoleName = (name != null && !name.isEmpty()) ? name : roleName;
+
+        // 创建图片生成服务实例
+        JoyImageGenerationService imageService = new JoyImageGenerationService();
+
+        // 调用图片生成服务
+        imageService.JoygenerateImage(this, userInput, new JoyImageGenerationService.ImageGenerationCallback() {
             @Override
             public void onSuccess(String characterName, String imagePath) {
-                // 图片生成成功
                 runOnUiThread(() -> {
-                    // 停止模拟进度并设置为 100%
-                    handler.removeCallbacks(progressUpdater);
-                    progressBar.setProgress(100);
+                    handler.removeCallbacks(progressUpdater); // 停止模拟进度
                     loadTextView.setText("100%"); // 动态更新 TextView
-                    // 保存到数据库
-                    saveToDatabase(imagePath, characterName);
-
+                    // 保存到数据库，包含所有字段信息
+                    saveToDatabase(imagePath, currentRoleName, currentName, currentGender, currentPersonality, currentLook);
                     Toast.makeText(oc_loading.this, "Image saved successfully!", Toast.LENGTH_SHORT).show();
-
-                    // 跳转到结果页面
+                    
+                    // 跳转到聊天页面
                     Intent intent = new Intent(oc_loading.this, joypal_chat.class);
-                    intent.putExtra("imagePath", imagePath); // 传递生成的图片路径
-                    intent.putExtra("roleName", characterName); // 传递角色名称
+                    intent.putExtra("imagePath", imagePath);
+                    intent.putExtra("roleName", currentRoleName);
+                    intent.putExtra("name", currentName);
+                    intent.putExtra("gender", currentGender);
+                    intent.putExtra("personality", currentPersonality);
+                    intent.putExtra("appearance", currentLook);
                     startActivity(intent);
-
-                    // 结束当前页面
+                    
                     finish();
                 });
             }
 
             @Override
             public void onFailure(String errorMessage) {
-                // 图片生成失败
                 runOnUiThread(() -> {
                     handler.removeCallbacks(progressUpdater); // 停止模拟进度
                     Toast.makeText(oc_loading.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
@@ -156,19 +177,48 @@ public class oc_loading extends AppCompatActivity {
         });
     }
 
-    private void saveToDatabase(String imagePath, String roleName) {
+    private void saveToDatabase(String imagePath, String roleName, String name, String gender, String personality, String appearance) {
         executorService.execute(() -> {
             try {
+                Log.d("oc_loading", "开始保存角色信息到数据库");
+                Log.d("oc_loading", "角色信息 - 角色名: " + roleName + 
+                    ", 图片路径: " + imagePath + 
+                    ", 名字: " + name + 
+                    ", 性别: " + gender + 
+                    ", 性格: " + personality + 
+                    ", 外观: " + appearance);
+                
                 // 获取数据库实例
                 AppDatabase db = AppDatabase.getDatabase(oc_loading.this);
                 
                 // 创建实体并插入
-                ImageRoleEntity entity = new ImageRoleEntity(imagePath, roleName);
+                ImageRoleEntity entity = new ImageRoleEntity(imagePath, roleName, name, gender, personality, appearance);
                 db.imageRoleDao().insert(entity);
                 
-                Log.d("oc_loading", "保存到数据库 - 角色名: " + roleName + ", 图片路径: " + imagePath);
+                Log.d("oc_loading", "角色信息保存成功");
+                
+                // 验证保存是否成功
+                ImageRoleEntity savedRole = db.imageRoleDao().getRoleByName(roleName);
+                if (savedRole != null) {
+                    Log.d("oc_loading", "验证保存成功 - 角色ID: " + savedRole.getId());
+                    
+                    // 保存到SharedPreferences
+                    SharedPreferences prefs = getSharedPreferences("RolePreferences", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("roleName", roleName);
+                    editor.putString("imagePath", imagePath);
+                    editor.apply();
+                    
+                    Log.d("oc_loading", "角色信息已同步到SharedPreferences");
+                } else {
+                    Log.e("oc_loading", "验证保存失败 - 未找到保存的角色");
+                    throw new Exception("角色保存验证失败");
+                }
             } catch (Exception e) {
-                Log.e("oc_loading", "保存数据时出错: " + e.getMessage());
+                Log.e("oc_loading", "保存角色信息失败", e);
+                runOnUiThread(() -> {
+                    Toast.makeText(oc_loading.this, "保存角色信息失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }
@@ -246,7 +296,7 @@ public class oc_loading extends AppCompatActivity {
 
             // 开始生成图片
             if (userInput != null && !userInput.isEmpty()) {
-                generateImage(userInput);
+                generateImage();
             } else {
                 Toast.makeText(this, "无效的用户输入", Toast.LENGTH_SHORT).show();
                 finish();
@@ -255,7 +305,7 @@ public class oc_loading extends AppCompatActivity {
             Log.e(TAG, "loadGif error: " + e.getMessage());
             gifImage.setImageResource(R.drawable.logo);
             if (userInput != null && !userInput.isEmpty()) {
-                generateImage(userInput);
+                generateImage();
             }
         }
     }
