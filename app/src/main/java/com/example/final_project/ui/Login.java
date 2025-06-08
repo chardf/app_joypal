@@ -115,9 +115,9 @@ public class Login extends AppCompatActivity {
                         user.getInt("id"), 
                         user.getString("role"));
 
-                    // 登录成功，跳转到角色列表页面
+                    // 登录成功，跳转到 getstart 页面
                     runOnUiThread(() -> {
-                        Intent intent = new Intent(Login.this, RolesListActivity.class);
+                        Intent intent = new Intent(Login.this, getstart.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();

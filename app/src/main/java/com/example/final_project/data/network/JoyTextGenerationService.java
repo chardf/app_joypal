@@ -91,7 +91,14 @@ public class JoyTextGenerationService {
                         
                         JSONObject jsonResponse = new JSONObject(responseBody);
                         JSONObject result = jsonResponse.getJSONObject("result");
-                        String reply = result.getString("SampleSpeech");
+                        String reply;
+                        if (result.has("SampleSpeech")) {
+                            reply = result.getString("SampleSpeech");
+                        } else if (result.has("VoicePrompt")) {
+                            reply = result.getString("VoicePrompt");
+                        } else {
+                            throw new JSONException("Neither SampleSpeech nor VoicePrompt field found in response");
+                        }
                         Log.d(TAG, "Generated text: " + reply);
                         
                         callback.onSuccess(reply);
