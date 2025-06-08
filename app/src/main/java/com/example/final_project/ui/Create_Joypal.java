@@ -8,18 +8,18 @@ import com.example.final_project.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
-public class Create_Joypet extends AppCompatActivity {
+public class Create_Joypal extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.create_joypet);
+        setContentView(R.layout.create_joypal);
 
         // 获取 "设计" 按钮并设置点击事件
         MaterialButton nextButton = findViewById(R.id.button_design); // 确保使用正确的按钮ID
         nextButton.setOnClickListener(view -> {
             // 创建 Intent 跳转到 PersonalityDesign 页面
-            Intent intent = new Intent(Create_Joypet.this, personality_design.class);
+            Intent intent = new Intent(Create_Joypal.this, personality_design.class);
             startActivity(intent); // 启动新页面
         });
 
@@ -35,7 +35,7 @@ public class Create_Joypet extends AppCompatActivity {
             int itemId = item.getItemId();
             if (itemId == R.id.menu_home) {
                 // 跳转到 Home 页面
-                intent = new Intent(Create_Joypet.this, getstart.class);
+                intent = new Intent(Create_Joypal.this, getstart.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
@@ -44,21 +44,19 @@ public class Create_Joypet extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.menu_joypal) {
                 // 跳转到 Joypal 页面
-                intent = new Intent(Create_Joypet.this, joypal_chat.class);
+                intent = new Intent(Create_Joypal.this, joypal_chat.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.menu_settings) {
                 // 跳转到 Settings 页面
-                intent = new Intent(Create_Joypet.this, settings.class);
+                intent = new Intent(Create_Joypal.this, settings.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
             }
             return false;
         });
-
-
     }
 
     @Override
@@ -71,5 +69,15 @@ public class Create_Joypet extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 设置底部导航栏 Create 图标高亮
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.menu_create);
+        }
     }
 }

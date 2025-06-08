@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.widget.Toast;
 import android.widget.ImageView;
 import android.view.View;
+import android.os.CountDownTimer;
+import android.widget.Button;
+import android.view.ViewGroup;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -26,9 +29,11 @@ public class getstart extends AppCompatActivity {
 
     private AppDatabase appDatabase;
     private ImageView gifImage;
-    private MaterialButton startButton;
+    private Button startButton;
     private BottomNavigationView bottomNavigationView;
     private ImageView loadingGifView;
+    private CountDownTimer countDownTimer;
+    private static final int COUNTDOWN_TIME = 3000; // 3秒倒计时
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -45,8 +50,17 @@ public class getstart extends AppCompatActivity {
         gifImage = findViewById(R.id.gif_image);
         loadingGifView = findViewById(R.id.loading_gif_view);
 
-        // 初始状态：隐藏按钮（因为要等数据库检查）
-        if (startButton != null) startButton.setVisibility(View.GONE);
+        // 初始状态：显示加载中
+        if (startButton != null) {
+            startButton.setVisibility(View.VISIBLE);
+            startButton.setText("Loading...");
+            startButton.setTextColor(getResources().getColor(android.R.color.white));
+            startButton.setEnabled(false); // 禁用按钮
+            // 设置按钮宽度为match_parent
+            ViewGroup.LayoutParams params = startButton.getLayoutParams();
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            startButton.setLayoutParams(params);
+        }
 
         // 设置底部导航栏 Home 图标高亮
         if (bottomNavigationView != null) {
@@ -56,6 +70,9 @@ public class getstart extends AppCompatActivity {
 
         // 加载 GIF
         loadGif();
+
+        // 开始检查角色数据
+        checkRoleDataAndNavigate();
     }
 
     @Override
@@ -63,6 +80,11 @@ public class getstart extends AppCompatActivity {
         super.onResume();
         // 在 Activity 每次可见时检查角色数据并决定是否跳转
         checkRoleDataAndNavigate();
+        
+        // 设置底部导航栏 Home 图标高亮
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.menu_home);
+        }
     }
 
     private void checkRoleDataAndNavigate() {
@@ -72,25 +94,55 @@ public class getstart extends AppCompatActivity {
                 appDatabase.imageRoleDao().getAll().removeObserver(this);
 
                 if (roleList != null && !roleList.isEmpty()) {
-                    // 如果有角色数据，跳转到 RolesListActivity
-                    Intent intent = new Intent(getstart.this, RolesListActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    // 如果没有角色数据，停留在 getstart 页面
-                    if (startButton != null) startButton.setVisibility(View.VISIBLE);
-
-                    // 设置按钮点击事件，跳转到 Create_Joypet 页面
+                    // 如果有角色数据，显示倒计时并自动跳转
                     if (startButton != null) {
+                        startButton.setText("Redirecting in 3s...");
+                        startButton.setTextColor(getResources().getColor(android.R.color.white));
+                        startButton.setEnabled(false);
+                        startCountDown();
+                    }
+                } else {
+                    // 如果没有角色数据，显示 getstart 按钮
+                    if (startButton != null) {
+                        startButton.setText("Get Start");
+                        startButton.setTextColor(getResources().getColor(android.R.color.white));
+                        startButton.setEnabled(true);
+                        // 设置按钮点击事件，跳转到 Create_Joypal 页面
                         startButton.setOnClickListener(view -> {
-                            Intent intent = new Intent(getstart.this, Create_Joypet.class);
+                            Intent intent = new Intent(getstart.this, Create_Joypal.class);
                             startActivity(intent);
                         });
                     }
                 }
             }
         });
+    }
+
+    private void startCountDown() {
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
+        countDownTimer = new CountDownTimer(COUNTDOWN_TIME, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (startButton != null) {
+                    int secondsRemaining = (int) (millisUntilFinished / 1000);
+                    startButton.setText("Redirecting in " + secondsRemaining + "s...");
+                    startButton.setTextColor(getResources().getColor(android.R.color.white));
+                    startButton.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                // 倒计时结束，跳转到角色列表页面
+                Intent intent = new Intent(getstart.this, RolesListActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
+            }
+        }.start();
     }
 
     // 设置底部导航监听器的方法
@@ -100,7 +152,7 @@ public class getstart extends AppCompatActivity {
             if (itemId == R.id.menu_home) {
                 return true;
             } else if (itemId == R.id.menu_create) {
-                Intent intent = new Intent(this, Create_Joypet.class);
+                Intent intent = new Intent(this, Create_Joypal.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
@@ -130,12 +182,12 @@ public class getstart extends AppCompatActivity {
         }
     }
 
-    // 如果需要处理 Activity 销毁时的清理工作，可以重写 onDestroy
-    // @Override
-    // protected void onDestroy() {
-    //     super.onDestroy();
-    //     if (gifImage != null) {
-    //         Glide.with(this).clear(gifImage);
-    //     }
-    // }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+            countDownTimer = null;
+        }
+    }
 }

@@ -2,6 +2,8 @@ package com.example.final_project.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -20,6 +22,7 @@ import android.widget.Toast;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import com.example.final_project.R;
 import com.example.final_project.data.network.KimiChatApiService;
@@ -29,6 +32,8 @@ import com.example.final_project.data.database.DatabaseHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.bumptech.glide.Glide;
 import com.airbnb.lottie.LottieAnimationView;
+import com.example.final_project.data.database.AppDatabase;
+import com.example.final_project.data.model.Entity.ImageRoleEntity;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -39,7 +44,7 @@ public class joypal_chat extends AppCompatActivity {
 
     private static final String PREFS_NAME = "RolePreferences";
     private static final String KEY_ROLE_NAME = "roleName";
-    private static final String KEY_IMAGE_PATH = "image_path";
+    private static final String KEY_IMAGE_PATH = "imagePath";
     private static final String TAG = "joypal_chat";
     private static final String KEY_CHARACTER_NAME = "character_name";
     private static final String KEY_CHAT_HISTORY = "chat_history";
@@ -72,8 +77,8 @@ public class joypal_chat extends AppCompatActivity {
             // 初始化视图
             ocImageView = findViewById(R.id.oc_image_container);
             chatTextView = findViewById(R.id.feedback_text);
-            messageInput = findViewById(R.id.user_input);
-            sendButton = findViewById(R.id.send_button);
+            messageInput = findViewById(R.id.userInput);
+            sendButton = findViewById(R.id.sendButton);
             scrollView = findViewById(R.id.scrollView);
             loadingAnimation = findViewById(R.id.loading_gif_view);
 
@@ -105,30 +110,25 @@ public class joypal_chat extends AppCompatActivity {
 
             // 如果仍然没有角色信息，尝试从SharedPreferences获取
             if (characterName == null || imagePath == null) {
-                SharedPreferences prefs = getSharedPreferences("RolePrefs", MODE_PRIVATE);
-                characterName = prefs.getString("lastRoleName", null);
-                imagePath = prefs.getString("lastImagePath", null);
+                SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                characterName = prefs.getString(KEY_ROLE_NAME, null);
+                imagePath = prefs.getString(KEY_IMAGE_PATH, null);
             }
 
-            // 如果仍然没有角色信息，返回角色列表页面
+            // 如果仍然没有角色信息，尝试从数据库获取最新的角色
             if (characterName == null || imagePath == null) {
-                Toast.makeText(this, "请先选择一个角色", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, RolesListActivity.class));
-                finish();
+                loadRoleInfo();
                 return;
             }
 
             // 保存当前角色信息
-            SharedPreferences.Editor editor = getSharedPreferences("RolePrefs", MODE_PRIVATE).edit();
-            editor.putString("lastRoleName", characterName);
-            editor.putString("lastImagePath", imagePath);
+            SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+            editor.putString(KEY_ROLE_NAME, characterName);
+            editor.putString(KEY_IMAGE_PATH, imagePath);
             editor.apply();
 
             // 加载角色信息
-            TextView nameTextView = findViewById(R.id.oc_name_text);
-            if (nameTextView != null) {
-                loadRoleInfo(nameTextView, ocImageView);
-            }
+            loadRoleInfo();
 
             // 加载聊天历史
             loadChatHistory();
@@ -178,7 +178,7 @@ public class joypal_chat extends AppCompatActivity {
             if (savedInstanceState != null) {
                 characterName = savedInstanceState.getString(KEY_CHARACTER_NAME);
                 imagePath = savedInstanceState.getString(KEY_IMAGE_PATH);
-                loadRoleInfo(findViewById(R.id.oc_name_text), findViewById(R.id.oc_image_container));
+                loadRoleInfo();
             }
         } catch (Exception e) {
             Log.e(TAG, "Error restoring instance state", e);
@@ -226,6 +226,11 @@ public class joypal_chat extends AppCompatActivity {
         loadChatHistory();
         isWaitingForResponse.set(false);
         setInputEnabled(true);
+        // 设置底部导航栏 Joypal 图标高亮
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.menu_joypal);
+        }
     }
 
     @Override
@@ -237,58 +242,71 @@ public class joypal_chat extends AppCompatActivity {
     /**
      * 加载角色信息
      */
-    private void loadRoleInfo(TextView nameTextView, ImageView imageView) {
-        // 获取 SharedPreferences
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+    private void loadRoleInfo() {
+        // 从SharedPreferences获取角色信息
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String roleName = prefs.getString(KEY_ROLE_NAME, "");
+        String imagePath = prefs.getString(KEY_IMAGE_PATH, "");
 
-        // 检查是否有传入的新角色信息
-        Intent intent = getIntent();
-        String newRoleName = intent.getStringExtra("roleName");
-        String newImagePath = intent.getStringExtra("imagePath");
-
-        if (newRoleName != null && newImagePath != null) {
-            // 如果有新角色信息，优先加载新信息并保存到 SharedPreferences
-            updateRoleInfo(newRoleName, newImagePath, nameTextView, imageView);
-        } else {
-            // 如果没有新信息，从 SharedPreferences 加载上一次保存的角色信息
-            String savedRoleName = preferences.getString(KEY_ROLE_NAME, "Unknown Character");
-            String savedImagePath = preferences.getString(KEY_IMAGE_PATH, null);
-
-            // 更新 UI
-            updateRoleInfo(savedRoleName, savedImagePath, nameTextView, imageView);
-        }
-    }
-
-    /**
-     * 保存角色信息到 SharedPreferences
-     */
-    private void saveRoleInfo(String roleName, String imagePath) {
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(KEY_ROLE_NAME, roleName);
-        editor.putString(KEY_IMAGE_PATH, imagePath);
-        editor.apply();
-    }
-
-    /**
-     * 更新角色信息到 UI
-     */
-    private void updateRoleInfo(String roleName, String imagePath, TextView nameTextView, ImageView imageView) {
-        // 更新角色名
-        nameTextView.setText(roleName);
-
-        // 更新角色图片
-        if (imagePath != null) {
-            File imageFile = new File(imagePath);
-            if (imageFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-                imageView.setImageBitmap(bitmap);
-            } else {
-                Toast.makeText(this, "Image file does not exist!", Toast.LENGTH_SHORT).show();
-                imageView.setImageDrawable(null); // 文件不存在则设置为空白
+        if (!roleName.isEmpty() && !imagePath.isEmpty()) {
+            // 如果有角色信息，显示角色信息
+            TextView ocNameText = findViewById(R.id.oc_name_text);
+            if (ocNameText != null) {
+                ocNameText.setText(roleName);
             }
+            Glide.with(this)
+                .load(new File(imagePath))
+                .placeholder(R.drawable.default_avatar)
+                .error(R.drawable.default_avatar)
+                .into(ocImageView);
+            messageInput.setEnabled(true);
+            sendButton.setEnabled(true);
         } else {
-            imageView.setImageDrawable(null); // 路径为空则设置为空白
+            // 如果没有角色信息，尝试从数据库获取最新的角色
+            DatabaseHelper dbHelper = new DatabaseHelper(this);
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            
+            Cursor cursor = db.query(
+                "image_roles",
+                new String[]{"name", "image_path"},
+                null,
+                null,
+                null,
+                null,
+                "id DESC",
+                "1"
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                String latestRoleName = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                String latestImagePath = cursor.getString(cursor.getColumnIndexOrThrow("image_path"));
+                
+                TextView ocNameText = findViewById(R.id.oc_name_text);
+                if (ocNameText != null) {
+                    ocNameText.setText(latestRoleName);
+                }
+                Glide.with(this)
+                    .load(new File(latestImagePath))
+                    .placeholder(R.drawable.default_avatar)
+                    .error(R.drawable.default_avatar)
+                    .into(ocImageView);
+                messageInput.setEnabled(true);
+                sendButton.setEnabled(true);
+                
+                cursor.close();
+            } else {
+                // 如果数据库中没有角色，显示默认状态
+                TextView ocNameText = findViewById(R.id.oc_name_text);
+                if (ocNameText != null) {
+                    ocNameText.setText("No character now");
+                }
+                Glide.with(this)
+                    .load(R.drawable.default_avatar)
+                    .into(ocImageView);
+                messageInput.setEnabled(false);
+                sendButton.setEnabled(false);
+            }
+            db.close();
         }
     }
 
@@ -316,7 +334,7 @@ public class joypal_chat extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.menu_create) {
-                Intent intent = new Intent(joypal_chat.this, Create_Joypet.class);
+                Intent intent = new Intent(joypal_chat.this, Create_Joypal.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
@@ -337,8 +355,14 @@ public class joypal_chat extends AppCompatActivity {
         if (isDestroyed.get() || isPaused.get() || isFinishing.get()) return;
         
         try {
-            chatHistory = databaseHelper.getChatHistory(characterName);
-            updateChatDisplay();
+            // 确保使用当前角色的名称加载聊天历史
+            if (characterName != null) {
+                chatHistory = databaseHelper.getChatHistory(characterName);
+                updateChatDisplay();
+            } else {
+                Log.e(TAG, "Character name is null when loading chat history");
+                chatHistory = new ArrayList<>();
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error loading chat history", e);
             chatHistory = new ArrayList<>();
@@ -402,7 +426,7 @@ public class joypal_chat extends AppCompatActivity {
                 loadingAnimation.setVisibility(View.VISIBLE);
                 loadingAnimation.playAnimation();
             }
-            
+
             // 发送到服务器
             KimiChatApiService.sendMessage(message, new KimiChatApiService.KimiChatCallback() {
                 @Override

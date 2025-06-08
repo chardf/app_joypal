@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -19,24 +20,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.final_project.R;
 import com.example.final_project.database.AppDatabase;
 import com.example.final_project.data.model.Entity.ImageRoleEntity;
+import com.example.final_project.data.network.AuthApiService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
 
 public class settings extends AppCompatActivity {
+    private Button logoutButton;
+    private Button changePasswordButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings);
 
-        // 初始化导航栏
+        // 初始化底部导航栏
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        setupBottomNavigationView(bottomNavigationView);
-
-        // 设置默认选中项为 Settings
+        // 设置导航栏图标的默认选择项为 "settings"
         bottomNavigationView.setSelectedItemId(R.id.menu_settings);
+        setupBottomNavigationView(bottomNavigationView);
 
         // 初始化并绑定清除按钮
         Button buttonClear = findViewById(R.id.button_clear);
@@ -46,15 +49,24 @@ public class settings extends AppCompatActivity {
         Button testButton = findViewById(R.id.test_button);
         testButton.setOnClickListener(v -> checkStoredData());
 
-        // 设置修改密码按钮点击事件
-        MaterialButton changePasswordButton = findViewById(R.id.button_change_password);
-        changePasswordButton.setOnClickListener(v -> {
-            Intent intent = new Intent(settings.this, ChangePassword.class);
-            startActivity(intent);
-        });
+        logoutButton = findViewById(R.id.logout_button);
+        changePasswordButton = findViewById(R.id.button_change_password);
+
+        logoutButton.setOnClickListener(v -> handleLogout());
+        changePasswordButton.setOnClickListener(v -> openChangePassword());
 
         // 在onCreate方法中添加
         checkAndRequestPermissions();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 设置底部导航栏 Settings 图标高亮
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.menu_settings);
+        }
     }
 
     private void setupBottomNavigationView(BottomNavigationView bottomNavigationView) {
@@ -65,18 +77,22 @@ public class settings extends AppCompatActivity {
                 intent = new Intent(settings.this, getstart.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
+                finish(); // 结束当前Activity
                 return true;
             } else if (itemId == R.id.menu_create) {
-                intent = new Intent(settings.this, Create_Joypet.class);
+                intent = new Intent(settings.this, Create_Joypal.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
+                finish(); // 结束当前Activity
                 return true;
             } else if (itemId == R.id.menu_joypal) {
                 intent = new Intent(settings.this, joypal_chat.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
+                finish(); // 结束当前Activity
                 return true;
             } else if (itemId == R.id.menu_settings) {
+                // 当前已经在Settings页面，不需要跳转
                 return true;
             }
             return false;
@@ -137,13 +153,6 @@ public class settings extends AppCompatActivity {
         }).start();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.menu_settings);
-    }
-
     private void checkAndRequestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
@@ -159,5 +168,18 @@ public class settings extends AppCompatActivity {
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
             }
         }
+    }
+
+    private void handleLogout() {
+        // 直接跳转到登录页面
+        Intent intent = new Intent(this, Login.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void openChangePassword() {
+        Intent intent = new Intent(this, ChangePassword.class);
+        startActivity(intent);
     }
 }

@@ -84,26 +84,25 @@ public class RolesListActivity extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.menu_home) {
-                // 当前Home 页面
-
+                // 当前已经在Home页面，不需要跳转
                 return true;
             } else if (itemId == R.id.menu_create) {
-                // 跳转到 Create 页面
-                Intent intent = new Intent(RolesListActivity.this, Create_Joypet.class);
+                Intent intent = new Intent(RolesListActivity.this, Create_Joypal.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
+                finish(); // 结束当前Activity
                 return true;
             } else if (itemId == R.id.menu_joypal) {
                 Intent intent = new Intent(RolesListActivity.this, joypal_chat.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
-
+                finish(); // 结束当前Activity
                 return true;
             } else if (itemId == R.id.menu_settings) {
-                // 跳转到 Settings 页面
                 Intent intent = new Intent(RolesListActivity.this, settings.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
+                finish(); // 结束当前Activity
                 return true;
             }
             return false;

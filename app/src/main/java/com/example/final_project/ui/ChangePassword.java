@@ -1,67 +1,124 @@
 package com.example.final_project.ui;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.final_project.R;
-import com.google.android.material.button.MaterialButton;
+import com.example.final_project.data.network.AuthApiService;
+import com.example.final_project.utils.PasswordValidator;
 
 public class ChangePassword extends AppCompatActivity {
-    private EditText currentPasswordEditText;
-    private EditText newPasswordEditText;
-    private EditText confirmNewPasswordEditText;
-    private MaterialButton changePasswordButton;
+    private EditText oldPasswordInput;
+    private EditText newPasswordInput;
+    private EditText confirmPasswordInput;
+    private Button submitButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.change_password);
 
-        // 初始化视图
-        currentPasswordEditText = findViewById(R.id.currentPasswordEditText);
-        newPasswordEditText = findViewById(R.id.newPasswordEditText);
-        confirmNewPasswordEditText = findViewById(R.id.confirmNewPasswordEditText);
-        changePasswordButton = findViewById(R.id.button_change_password);
+        oldPasswordInput = findViewById(R.id.old_password_input);
+        newPasswordInput = findViewById(R.id.new_password_input);
+        confirmPasswordInput = findViewById(R.id.confirm_password_input);
+        submitButton = findViewById(R.id.submit_button);
 
-        // 设置修改密码按钮点击事件
-        changePasswordButton.setOnClickListener(view -> {
-            String currentPassword = currentPasswordEditText.getText().toString().trim();
-            String newPassword = newPasswordEditText.getText().toString().trim();
-            String confirmNewPassword = confirmNewPasswordEditText.getText().toString().trim();
+        // 添加新密码输入监听器
+        newPasswordInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            if (validateInput(currentPassword, newPassword, confirmNewPassword)) {
-                // TODO: 实现实际的密码修改逻辑
-                // 这里应该添加验证当前密码和更新新密码的代码
-                Toast.makeText(ChangePassword.this, "密码修改成功", Toast.LENGTH_SHORT).show();
-                finish();
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String error = PasswordValidator.getPasswordError(s.toString());
+                if (error != null) {
+                    newPasswordInput.setError(error);
+                } else {
+                    newPasswordInput.setError(null);
+                }
             }
         });
+
+        // 添加确认密码输入监听器
+        confirmPasswordInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String newPassword = newPasswordInput.getText().toString();
+                if (!s.toString().equals(newPassword)) {
+                    confirmPasswordInput.setError("两次输入的密码不一致");
+                } else {
+                    confirmPasswordInput.setError(null);
+                }
+            }
+        });
+
+        submitButton.setOnClickListener(v -> handleChangePassword());
     }
 
-    private boolean validateInput(String currentPassword, String newPassword, String confirmNewPassword) {
-        if (currentPassword.isEmpty()) {
-            currentPasswordEditText.setError("请输入当前密码");
-            return false;
+    private void handleChangePassword() {
+        String oldPassword = oldPasswordInput.getText().toString().trim();
+        String newPassword = newPasswordInput.getText().toString().trim();
+        String confirmPassword = confirmPasswordInput.getText().toString().trim();
+
+        // 验证旧密码
+        if (oldPassword.isEmpty()) {
+            oldPasswordInput.setError("请输入当前密码");
+            return;
         }
-        if (newPassword.isEmpty()) {
-            newPasswordEditText.setError("请输入新密码");
-            return false;
+
+        // 验证新密码
+        String passwordError = PasswordValidator.getPasswordError(newPassword);
+        if (passwordError != null) {
+            newPasswordInput.setError(passwordError);
+            return;
         }
-        if (confirmNewPassword.isEmpty()) {
-            confirmNewPasswordEditText.setError("请确认新密码");
-            return false;
+
+        // 验证确认密码
+        if (!newPassword.equals(confirmPassword)) {
+            confirmPasswordInput.setError("两次输入的新密码不一致");
+            return;
         }
-        if (!newPassword.equals(confirmNewPassword)) {
-            confirmNewPasswordEditText.setError("两次输入的新密码不一致");
-            return false;
+
+        // 获取当前用户名
+        String username = AuthApiService.getUsername(this);
+        if (username == null) {
+            Toast.makeText(this, "未登录", Toast.LENGTH_SHORT).show();
+            return;
         }
-        if (newPassword.equals(currentPassword)) {
-            newPasswordEditText.setError("新密码不能与当前密码相同");
-            return false;
-        }
-        return true;
+
+        // 禁用提交按钮，防止重复点击
+        submitButton.setEnabled(false);
+
+        // 发送修改密码请求
+        AuthApiService.changePassword(this, username, oldPassword, newPassword, new AuthApiService.AuthCallback() {
+            @Override
+            public void onSuccess(String response) {
+                runOnUiThread(() -> {
+                    Toast.makeText(ChangePassword.this, "密码修改成功", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+            }
+
+            @Override
+            public void onFailure(String error) {
+                runOnUiThread(() -> {
+                    Toast.makeText(ChangePassword.this, "密码修改失败: " + error, Toast.LENGTH_SHORT).show();
+                    submitButton.setEnabled(true);
+                });
+            }
+        });
     }
 } 

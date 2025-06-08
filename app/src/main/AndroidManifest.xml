@@ -38,7 +38,7 @@
             android:exported="true">
         </activity>
         <activity
-            android:name=".ui.Create_Joypet"
+            android:name=".ui.Create_Joypal"
             android:exported="true">
         </activity>
         <activity

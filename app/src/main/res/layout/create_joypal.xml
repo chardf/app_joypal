@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFDEE"
-    tools:context=".ui.Create_Joypet">
+    tools:context=".ui.Create_Joypal">
 
     <!-- 内容区域 -->
     <TextView
@@ -85,9 +85,10 @@
         android:layout_height="100dp"
         app:backgroundTint="#FFFDEE"
         app:labelVisibilityMode="unlabeled"
-        app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

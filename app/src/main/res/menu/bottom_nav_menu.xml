@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
@@ -12,9 +13,10 @@
     <item
         android:id="@+id/menu_joypal"
         android:icon="@drawable/joypal"
-        android:title="joypal" />
+        android:title="JoyPal" />
     <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/settings"
-        android:title="settings" />
+        android:title="settings"
+        android:iconTint="@drawable/settings_color_selector" />
 </menu>

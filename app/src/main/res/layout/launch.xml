@@ -30,7 +30,7 @@
 
         <!-- 标题 -->
         <TextView
-            android:id="@+id/joypet"
+            android:id="@+id/joypal"
             android:layout_width="136dp"
             android:layout_height="50dp"
             android:layout_alignTop="@id/logo"
@@ -46,7 +46,7 @@
             android:id="@+id/characterc"
             android:layout_width="match_parent"
             android:layout_height="59dp"
-            android:layout_below="@id/joypet"
+            android:layout_below="@id/joypal"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="50dp"
             app:srcCompat="@drawable/charactercreator" />
