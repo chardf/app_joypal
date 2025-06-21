@@ -1,87 +1,200 @@
 package com.example.final_project.ui;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.res.ColorStateList;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.final_project.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 public class personality_design extends AppCompatActivity {
 
     private EditText nameEditText, lookEditText, genderEditText, personalityEditText;
     private MaterialButton nextButton, skip;
+    private TextView uploadReferenceImage, referenceImageFilename, changeReferenceImage;
+    private ImageView deleteReferenceImage;
+    private LinearLayout imagePreviewContainer;
+    private String selectedImagePath = null;
+
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+    private ActivityResultLauncher<Intent> pickImageLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.personality_design);
 
-        // 初始化视图
+        initializeViews();
+        setupLaunchers();
+        setupListeners();
+
+        updateNextButtonState(false);
+    }
+
+    private void initializeViews() {
         nameEditText = findViewById(R.id.nameEditText);
         lookEditText = findViewById(R.id.look);
         genderEditText = findViewById(R.id.gender);
         personalityEditText = findViewById(R.id.personality);
         nextButton = findViewById(R.id.button_design2);
         skip = findViewById(R.id.skip);
+        uploadReferenceImage = findViewById(R.id.upload_reference_image);
 
-        // 初始时禁用 Next 按钮
-        updateNextButtonState(false);
+        // New views for image preview
+        imagePreviewContainer = findViewById(R.id.image_preview_container);
+        deleteReferenceImage = findViewById(R.id.delete_reference_image);
+        referenceImageFilename = findViewById(R.id.reference_image_filename);
+        changeReferenceImage = findViewById(R.id.change_reference_image);
+    }
 
-        // 设置输入框的监听器
+    private void setupLaunchers() {
+        requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+            if (isGranted) {
+                launchImagePicker();
+            } else {
+                showPermissionDeniedDialog();
+            }
+        });
+
+        pickImageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == RESULT_OK && result.getData() != null && result.getData().getData() != null) {
+                Uri selectedImageUri = result.getData().getData();
+                selectedImagePath = selectedImageUri.toString();
+
+                String filename = getFileName(selectedImageUri);
+                referenceImageFilename.setText(filename);
+
+                uploadReferenceImage.setVisibility(View.GONE);
+                imagePreviewContainer.setVisibility(View.VISIBLE);
+
+                Toast.makeText(this, "Reference image selected", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setupListeners() {
         setupInputListeners();
+        uploadReferenceImage.setOnClickListener(v -> handleImageUploadClick());
+        deleteReferenceImage.setOnClickListener(v -> handleDeleteImageClick());
+        changeReferenceImage.setOnClickListener(v -> handleImageUploadClick());
+        setupNextButton();
+        setupSkipButton();
+        setupBottomNavigationView();
+    }
 
-        // 设置 Next 按钮的点击事件
+    private void handleDeleteImageClick() {
+        selectedImagePath = null;
+        imagePreviewContainer.setVisibility(View.GONE);
+        uploadReferenceImage.setVisibility(View.VISIBLE);
+        Toast.makeText(this, "Reference image removed", Toast.LENGTH_SHORT).show();
+    }
 
+    private void handleImageUploadClick() {
+        String permission = getRequiredPermission();
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+            launchImagePicker();
+        } else if (shouldShowRequestPermissionRationale(permission)) {
+            showPermissionRationaleDialog();
+        } else {
+            requestPermissionLauncher.launch(permission);
+        }
+    }
+
+    private String getRequiredPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return Manifest.permission.READ_MEDIA_IMAGES;
+        } else {
+            return Manifest.permission.READ_EXTERNAL_STORAGE;
+        }
+    }
+
+    private void launchImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        pickImageLauncher.launch(intent);
+    }
+    
+    private void showPermissionRationaleDialog() {
+        new AlertDialog.Builder(this)
+            .setTitle("Storage Permission Needed")
+            .setMessage("This app needs the Storage permission to select an image. Please grant the permission.")
+            .setPositiveButton("OK", (dialog, which) -> {
+                requestPermissionLauncher.launch(getRequiredPermission());
+            })
+            .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+            .create()
+            .show();
+    }
+
+    private void showPermissionDeniedDialog() {
+        new AlertDialog.Builder(this)
+            .setTitle("Permission Denied")
+            .setMessage("You have denied the storage permission. To select an image, please go to settings and grant the permission.")
+            .setPositiveButton("Go to Settings", (dialog, which) -> {
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            })
+            .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+            .create()
+            .show();
+    }
+
+    private void setupNextButton() {
         nextButton.setOnClickListener(v -> {
             if (nextButton.isEnabled()) {
-                // 获取所有输入字段
                 String name = nameEditText.getText().toString().trim();
                 String look = lookEditText.getText().toString().trim();
                 String gender = genderEditText.getText().toString().trim();
                 String personality = personalityEditText.getText().toString().trim();
                 String userInput = combineInputsAsString();
 
-                // 跳转到 oc_loading 页面并传递所有信息
-                Intent intent = new Intent(personality_design.this, oc_loading.class);
+                Intent intent = new Intent(this, oc_loading.class);
                 intent.putExtra("userInput", userInput);
                 intent.putExtra("roleName", name);
                 intent.putExtra("name", name);
                 intent.putExtra("look", look);
                 intent.putExtra("gender", gender);
                 intent.putExtra("personality", personality);
+                if (selectedImagePath != null) {
+                    intent.putExtra("referenceImagePath", selectedImagePath);
+                }
                 startActivity(intent);
-
                 finish();
             }
         });
-
-        setupSkipButton();
-        setupBottomNavigationView();
     }
 
     private void setupInputListeners() {
         TextWatcher textWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int start, int before, int after) {
-                checkInputs();
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { checkInputs(); }
+            @Override public void afterTextChanged(Editable s) {}
         };
-
         nameEditText.addTextChangedListener(textWatcher);
         lookEditText.addTextChangedListener(textWatcher);
         genderEditText.addTextChangedListener(textWatcher);
@@ -91,60 +204,40 @@ public class personality_design extends AppCompatActivity {
     private void checkInputs() {
         boolean isValid = isInputValid(nameEditText) && isInputValid(lookEditText) &&
                 isInputValid(genderEditText) && isInputValid(personalityEditText);
-
         updateNextButtonState(isValid);
     }
 
     private boolean isInputValid(EditText editText) {
-        String input = editText.getText().toString().trim();
-        return input.length() > 0 && input.length() <= 30;
+        return editText.getText().toString().trim().length() > 0 && editText.getText().toString().trim().length() <= 30;
     }
 
     private void updateNextButtonState(boolean isEnabled) {
-        if (isEnabled) {
-            nextButton.setEnabled(true);
-            nextButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#044132")));
-        } else {
-            nextButton.setEnabled(false);
-            nextButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#B0B0B0")));
-        }
+        nextButton.setEnabled(isEnabled);
+        nextButton.setBackgroundColor(isEnabled ? Color.parseColor("#044132") : Color.parseColor("#B0B0B0"));
     }
 
     private String combineInputsAsString() {
-        String name = nameEditText.getText().toString().trim();
-        String look = lookEditText.getText().toString().trim();
-        String gender = genderEditText.getText().toString().trim();
-        String personality = personalityEditText.getText().toString().trim();
-
-        return "Name: " + name + ", Gender: " + gender + ", Personality: " + personality + ", Look: " + look;
+        return "Name: " + nameEditText.getText().toString().trim() +
+               ", Gender: " + genderEditText.getText().toString().trim() +
+               ", Personality: " + personalityEditText.getText().toString().trim() +
+               ", Look: " + lookEditText.getText().toString().trim();
     }
 
     private void setupBottomNavigationView() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-
-        // 设置导航栏图标的默认选择项为 "create"
         bottomNavigationView.setSelectedItemId(R.id.menu_create);
-
-        // 为导航栏的每个选项设置监听器
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.menu_home) {
-                Intent intent = new Intent(personality_design.this, getstart.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                startActivity(new Intent(this, getstart.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
                 return true;
             } else if (itemId == R.id.menu_create) {
-                // 当前页面就是 Create，不做操作
                 return true;
             } else if (itemId == R.id.menu_joypal) {
-                Intent intent = new Intent(personality_design.this, joypal_chat.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                startActivity(new Intent(this, joypal_chat.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
                 return true;
-            } else if (itemId == R.id.menu_settings) { // 注意这里的 ID，确保和你的菜单文件一致
-                Intent intent = new Intent(personality_design.this, settings.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+            } else if (itemId == R.id.menu_settings) {
+                startActivity(new Intent(this, settings.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
                 return true;
             }
             return false;
@@ -153,20 +246,38 @@ public class personality_design extends AppCompatActivity {
 
     private void setupSkipButton() {
         skip.setOnClickListener(v -> {
-            // 传递空数据
-            String emptyUserInput = "Name: , Gender: , Personality: , Look: ";
-
-            // 跳转到 oc_loading 页面并传递空数据
-            Intent intent = new Intent(personality_design.this, oc_loading.class);
-            intent.putExtra("userInput", emptyUserInput);
+            Intent intent = new Intent(this, oc_loading.class);
+            intent.putExtra("userInput", "Name: , Gender: , Personality: , Look: ");
             intent.putExtra("roleName", "");
             intent.putExtra("name", "");
             intent.putExtra("look", "");
             intent.putExtra("gender", "");
             intent.putExtra("personality", "");
+            if (selectedImagePath != null) {
+                intent.putExtra("referenceImagePath", selectedImagePath);
+            }
             startActivity(intent);
-
             finish();
         });
+    }
+
+    @SuppressLint("Range")
+    private String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 }

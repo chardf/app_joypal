@@ -123,7 +123,7 @@ public class JoyImageGenerationService {
         return requestBody;
     }
 
-    private String downloadAndSaveImage(Context context, String imageUrl, String fileName) throws Exception {
+    public static String downloadAndSaveImage(Context context, String imageUrl, String fileName) throws Exception {
         InputStream inputStream = new URL(imageUrl).openStream();
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 

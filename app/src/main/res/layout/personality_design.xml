@@ -21,7 +21,6 @@
         android:text="@string/create_describe"
         android:textAppearance="@style/joypal2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.571"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -46,7 +45,7 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
                 android:background="@android:color/white"
-                android:hint="What’s JoyPal’s Name?"
+                android:hint="What's JoyPal's Name?"
                 android:textColor="@android:color/black"
                 android:padding="10dp"
                 android:maxLength="30" />
@@ -80,7 +79,7 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
                 android:background="@android:color/white"
-                android:hint="What’s JoyPal’s Gender?"
+                android:hint="What's JoyPal's Gender?"
                 android:textColor="@android:color/black"
                 android:padding="10dp"
                 android:maxLength="30" />
@@ -97,63 +96,108 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
                 android:background="@android:color/white"
-                android:hint="What’s JoyPal’s Personality?"
+                android:hint="What's JoyPal's Personality?"
                 android:textColor="@android:color/black"
                 android:padding="10dp"
                 android:maxLength="30" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- MaterialButton -->
+        <TextView
+            android:id="@+id/upload_reference_image"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:text="@string/upload_reference_image"
+            android:textColor="#2A9DCE"
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:visibility="visible"/>
+
+        <LinearLayout
+            android:id="@+id/image_preview_container"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/delete_reference_image"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/bin"
+                android:contentDescription="@string/delete_reference_image" />
+
+            <TextView
+                android:id="@+id/reference_image_filename"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:ellipsize="middle"
+                android:singleLine="true"
+                android:textColor="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/change_reference_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/change_picture"
+                android:textColor="#2A9DCE"
+                android:textSize="14sp" />
+        </LinearLayout>
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_design2"
             android:layout_width="300dp"
             android:layout_height="58dp"
-            android:text="@string/button_next"
+            android:layout_marginTop="20dp"
             android:backgroundTint="#044132"
+            android:enabled="false"
+            android:text="@string/button_next"
+            android:textAppearance="@style/button"
+            android:textColor="@android:color/white"
             app:cornerRadius="29dp"
             app:iconPadding="8dp"
             app:rippleColor="#80FFFFFF"
             app:strokeColor="#2C2C2C"
-            app:strokeWidth="2dp"
-            android:textAppearance="@style/button"
-            app:layout_constraintTop_toBottomOf="@id/personalityEditText"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="20dp"
-            android:enabled="false"
-            android:textColor="@android:color/white"/> <!-- 字体始终是白色 -->
+            app:strokeWidth="2dp" /> <!-- 字体始终是白色 -->
 
+        <!-- Upload reference image TextView -->
 
         <!-- TextView -->
         <TextView
             android:id="@+id/create_describe2"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
+            android:layout_marginTop="15dp"
             android:gravity="center"
             android:text="@string/create_describe2"
-            android:textAppearance="@style/create_describe2"
-            app:layout_constraintTop_toBottomOf="@id/button_design2"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="15dp" />
+            android:textAppearance="@style/create_describe2" />
 
         <!-- MaterialButton -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/skip"
             android:layout_width="100dp"
             android:layout_height="50dp"
-            android:text="@string/button_skip"
+            android:layout_marginTop="2dp"
             android:backgroundTint="#044132"
+            android:text="@string/button_skip"
+            android:textAppearance="@style/button"
             app:cornerRadius="29dp"
             app:iconPadding="8dp"
             app:rippleColor="#80FFFFFF"
             app:strokeColor="#2C2C2C"
-            app:strokeWidth="2dp"
-            android:textAppearance="@style/button"
-            app:layout_constraintTop_toBottomOf="@id/create_describe2"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="2dp" />
+            app:strokeWidth="2dp" />
     </LinearLayout>
 
     <!-- 底部导航栏 -->

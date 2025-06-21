@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import com.example.final_project.R;
 import com.example.final_project.data.model.Entity.ImageRoleEntity;
 import com.example.final_project.data.network.JoyImageGenerationService;
+import com.example.final_project.data.network.JoyImageToImageService;
 import com.example.final_project.database.AppDatabase;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
@@ -130,6 +131,7 @@ public class oc_loading extends AppCompatActivity {
         String look = getIntent().getStringExtra("look");
         String gender = getIntent().getStringExtra("gender");
         String personality = getIntent().getStringExtra("personality");
+        String referenceImagePath = getIntent().getStringExtra("referenceImagePath");
 
         // 保存到类成员变量中
         currentName = name;
@@ -138,42 +140,74 @@ public class oc_loading extends AppCompatActivity {
         currentPersonality = personality;
         currentRoleName = (name != null && !name.isEmpty()) ? name : roleName;
 
-        // 创建图片生成服务实例
-        JoyImageGenerationService imageService = new JoyImageGenerationService();
+        if (referenceImagePath != null && !referenceImagePath.isEmpty()) {
+            // 调用 img2img 服务
+            generateWithReferenceImage(referenceImagePath);
+        } else {
+            // 调用 text2img 服务
+            generateWithoutReferenceImage(userInput);
+        }
+    }
 
-        // 调用图片生成服务
-        imageService.JoygenerateImage(this, userInput, new JoyImageGenerationService.ImageGenerationCallback() {
+    private void generateWithReferenceImage(String imagePath) {
+        JoyImageToImageService img2imgService = new JoyImageToImageService();
+        img2imgService.generateImageFromImage(this, currentName, currentGender, currentPersonality, currentLook, imagePath, new JoyImageToImageService.ImageGenerationCallback() {
             @Override
-            public void onSuccess(String characterName, String imagePath) {
-                runOnUiThread(() -> {
-                    handler.removeCallbacks(progressUpdater); // 停止模拟进度
-                    loadTextView.setText("100%"); // 动态更新 TextView
-                    // 保存到数据库，包含所有字段信息
-                    saveToDatabase(imagePath, currentRoleName, currentName, currentGender, currentPersonality, currentLook);
-                    Toast.makeText(oc_loading.this, "Image saved successfully!", Toast.LENGTH_SHORT).show();
-                    
-                    // 跳转到聊天页面
-                    Intent intent = new Intent(oc_loading.this, joypal_chat.class);
-                    intent.putExtra("imagePath", imagePath);
-                    intent.putExtra("roleName", currentRoleName);
-                    intent.putExtra("name", currentName);
-                    intent.putExtra("gender", currentGender);
-                    intent.putExtra("personality", currentPersonality);
-                    intent.putExtra("appearance", currentLook);
-                    startActivity(intent);
-                    
-                    finish();
-                });
+            public void onSuccess(String characterName, String imageUrl) {
+                try {
+                    String localImagePath = JoyImageGenerationService.downloadAndSaveImage(oc_loading.this, imageUrl, characterName);
+                    handleImageGenerationSuccess(characterName, localImagePath);
+                } catch (Exception e) {
+                    handleImageGenerationFailure("Failed to save generated image: " + e.getMessage());
+                }
             }
 
             @Override
             public void onFailure(String errorMessage) {
-                runOnUiThread(() -> {
-                    handler.removeCallbacks(progressUpdater); // 停止模拟进度
-                    Toast.makeText(oc_loading.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
-                    finish();
-                });
+                handleImageGenerationFailure(errorMessage);
             }
+        });
+    }
+
+    private void generateWithoutReferenceImage(String userInput) {
+        JoyImageGenerationService imageService = new JoyImageGenerationService();
+        imageService.JoygenerateImage(this, userInput, new JoyImageGenerationService.ImageGenerationCallback() {
+            @Override
+            public void onSuccess(String characterName, String imagePath) {
+                handleImageGenerationSuccess(characterName, imagePath);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                handleImageGenerationFailure(errorMessage);
+            }
+        });
+    }
+
+    private void handleImageGenerationSuccess(String characterName, String imagePath) {
+        runOnUiThread(() -> {
+            handler.removeCallbacks(progressUpdater);
+            loadTextView.setText("100%");
+            saveToDatabase(imagePath, characterName, currentName, currentGender, currentPersonality, currentLook);
+            Toast.makeText(oc_loading.this, "Image saved successfully!", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(oc_loading.this, joypal_chat.class);
+            intent.putExtra("imagePath", imagePath);
+            intent.putExtra("roleName", characterName);
+            intent.putExtra("name", currentName);
+            intent.putExtra("gender", currentGender);
+            intent.putExtra("personality", currentPersonality);
+            intent.putExtra("appearance", currentLook);
+            startActivity(intent);
+            finish();
+        });
+    }
+
+    private void handleImageGenerationFailure(String errorMessage) {
+        runOnUiThread(() -> {
+            handler.removeCallbacks(progressUpdater);
+            Toast.makeText(oc_loading.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
+            finish();
         });
     }
 

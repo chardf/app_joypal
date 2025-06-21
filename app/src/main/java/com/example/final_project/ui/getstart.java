@@ -93,6 +93,14 @@ public class getstart extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
     private void checkRoleDataAndNavigate() {
         appDatabase.imageRoleDao().getAll().observe(this, new Observer<List<ImageRoleEntity>>() {
             @Override

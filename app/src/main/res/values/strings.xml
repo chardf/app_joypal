@@ -15,4 +15,8 @@
     <string name="joypal_gene">JoyPal Generating...</string>
     <string name="load">0%</string>
     <string name="back_to_log">Back to Login</string>
+    <string name="upload_reference_image"><u>Upload a reference image (optional)</u></string>
+    <string name="upload_reference_image_underlined"><u>Upload a reference image</u></string>
+    <string name="delete_reference_image">Delete reference image</string>
+    <string name="change_picture"><u>Change picture</u></string>
 </resources>
