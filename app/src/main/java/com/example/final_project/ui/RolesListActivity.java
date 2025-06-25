@@ -62,11 +62,17 @@ public class RolesListActivity extends AppCompatActivity {
         setupBeginButton();
     }
 
+    private String getCurrentUserId() {
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        return prefs.getString("userId", "");
+    }
+
     private void loadRoleInfo() {
         // 直接从数据库加载所有角色
         AppDatabase database = AppDatabase.getDatabase(this);
         ImageRoleDao imageRoleDao = database.imageRoleDao();
-        RolesListViewModelFactory factory = new RolesListViewModelFactory(imageRoleDao);
+        String userId = getCurrentUserId();
+        RolesListViewModelFactory factory = new RolesListViewModelFactory(imageRoleDao, userId);
         rolesListViewModel = new ViewModelProvider(this, factory).get(RolesListViewModel.class);
         rolesListViewModel.getRoleList().observe(this, this::setupAdapter);
     }

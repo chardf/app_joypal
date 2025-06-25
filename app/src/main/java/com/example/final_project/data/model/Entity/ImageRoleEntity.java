@@ -16,15 +16,17 @@ public class ImageRoleEntity implements Parcelable {
     private String gender;
     private String personality;
     private String appearance;
+    private String userId; // 新增字段，标识创建者
 
     // 构造函数
-    public ImageRoleEntity(String imagePath, String roleName, String name, String gender, String personality, String appearance) {
+    public ImageRoleEntity(String imagePath, String roleName, String name, String gender, String personality, String appearance, String userId) {
         this.imagePath = imagePath != null ? imagePath : "";
         this.roleName = roleName != null ? roleName : "";
         this.name = name != null ? name : "";
         this.gender = gender != null ? gender : "";
         this.personality = personality != null ? personality : "";
         this.appearance = appearance != null ? appearance : "";
+        this.userId = userId != null ? userId : "";
     }
 
     // Parcelable 构造函数
@@ -36,6 +38,7 @@ public class ImageRoleEntity implements Parcelable {
         gender = in.readString();
         personality = in.readString();
         appearance = in.readString();
+        userId = in.readString();
     }
 
     // Parcelable 实现
@@ -48,6 +51,7 @@ public class ImageRoleEntity implements Parcelable {
         dest.writeString(gender != null ? gender : "");
         dest.writeString(personality != null ? personality : "");
         dest.writeString(appearance != null ? appearance : "");
+        dest.writeString(userId != null ? userId : "");
     }
 
     @Override
@@ -124,6 +128,14 @@ public class ImageRoleEntity implements Parcelable {
         this.appearance = appearance != null ? appearance : "";
     }
 
+    public String getUserId() {
+        return userId != null ? userId : "";
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId != null ? userId : "";
+    }
+
     // 用于调试的toString方法
     @Override
     public String toString() {
@@ -135,6 +147,7 @@ public class ImageRoleEntity implements Parcelable {
                 ", gender='" + gender + '\'' +
                 ", personality='" + personality + '\'' +
                 ", appearance='" + appearance + '\'' +
+                ", userId='" + userId + '\'' +
                 '}';
     }
 }

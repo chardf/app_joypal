@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.LinearLayout;
+import android.content.SharedPreferences;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -101,11 +102,24 @@ public class getstart extends AppCompatActivity {
         }
     }
 
+    private String getCurrentUserId() {
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        return prefs.getString("userId", "");
+    }
+
     private void checkRoleDataAndNavigate() {
-        appDatabase.imageRoleDao().getAll().observe(this, new Observer<List<ImageRoleEntity>>() {
+        String currentUserId = getCurrentUserId();
+        Log.d("getstart", "当前userId: " + currentUserId);
+        appDatabase.imageRoleDao().getRolesByUserId(currentUserId).observe(this, new Observer<List<ImageRoleEntity>>() {
             @Override
             public void onChanged(List<ImageRoleEntity> roleList) {
-                appDatabase.imageRoleDao().getAll().removeObserver(this);
+                appDatabase.imageRoleDao().getRolesByUserId(currentUserId).removeObserver(this);
+                Log.d("getstart", "查到的角色数量: " + (roleList != null ? roleList.size() : 0));
+                if (roleList != null) {
+                    for (ImageRoleEntity role : roleList) {
+                        Log.d("getstart", "角色: id=" + role.getId() + ", name=" + role.getRoleName() + ", userId=" + role.getUserId());
+                    }
+                }
 
                 if (roleList != null && !roleList.isEmpty()) {
                     // 如果有角色数据，显示倒计时并自动跳转

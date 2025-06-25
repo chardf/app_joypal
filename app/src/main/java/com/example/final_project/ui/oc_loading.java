@@ -221,28 +221,25 @@ public class oc_loading extends AppCompatActivity {
                     ", 性别: " + gender + 
                     ", 性格: " + personality + 
                     ", 外观: " + appearance);
-                
+                // 获取userId
+                SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                String userId = prefs.getString("userId", "");
                 // 获取数据库实例
                 AppDatabase db = AppDatabase.getDatabase(oc_loading.this);
-                
                 // 创建实体并插入
-                ImageRoleEntity entity = new ImageRoleEntity(imagePath, roleName, name, gender, personality, appearance);
+                ImageRoleEntity entity = new ImageRoleEntity(imagePath, roleName, name, gender, personality, appearance, userId);
                 db.imageRoleDao().insert(entity);
-                
                 Log.d("oc_loading", "角色信息保存成功");
-                
                 // 验证保存是否成功
                 ImageRoleEntity savedRole = db.imageRoleDao().getRoleByName(roleName);
                 if (savedRole != null) {
                     Log.d("oc_loading", "验证保存成功 - 角色ID: " + savedRole.getId());
-                    
                     // 保存到SharedPreferences
-                    SharedPreferences prefs = getSharedPreferences("RolePreferences", MODE_PRIVATE);
-                    SharedPreferences.Editor editor = prefs.edit();
+                    SharedPreferences rolePrefs = getSharedPreferences("RolePreferences", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = rolePrefs.edit();
                     editor.putString("roleName", roleName);
                     editor.putString("imagePath", imagePath);
                     editor.apply();
-                    
                     Log.d("oc_loading", "角色信息已同步到SharedPreferences");
                 } else {
                     Log.e("oc_loading", "验证保存失败 - 未找到保存的角色");

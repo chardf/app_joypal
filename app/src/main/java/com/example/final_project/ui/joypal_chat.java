@@ -87,12 +87,14 @@ public class joypal_chat extends AppCompatActivity {
             mainHandler = new Handler(Looper.getMainLooper());
             chatHistory = new ArrayList<>();
 
+            // 获取当前userId
+            SharedPreferences userPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+            String userId = userPrefs.getString("userId", "");
             // 恢复保存的状态
             if (savedInstanceState != null) {
-                characterName.set(savedInstanceState.getString(KEY_CHARACTER_NAME));
-                imagePath.set(savedInstanceState.getString(KEY_IMAGE_PATH));
+                characterName.set(savedInstanceState.getString(getRoleNameKey(userId)));
+                imagePath.set(savedInstanceState.getString(getImagePathKey(userId)));
             }
-
             // 如果没有保存的状态，从Intent获取
             if (characterName.get() == null || imagePath.get() == null) {
                 Intent intent = getIntent();
@@ -101,24 +103,21 @@ public class joypal_chat extends AppCompatActivity {
                     imagePath.set(intent.getStringExtra("imagePath"));
                 }
             }
-
-            // 如果仍然没有角色信息，尝试从SharedPreferences获取
+            // 如果仍然没有角色信息，尝试从SharedPreferences获取（带userId后缀）
             if (characterName.get() == null || imagePath.get() == null) {
                 SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-                characterName.set(prefs.getString(KEY_ROLE_NAME, null));
-                imagePath.set(prefs.getString(KEY_IMAGE_PATH, null));
+                characterName.set(prefs.getString(getRoleNameKey(userId), null));
+                imagePath.set(prefs.getString(getImagePathKey(userId), null));
             }
-
             // 如果仍然没有角色信息，尝试从数据库获取最新的角色
             if (characterName.get() == null || imagePath.get() == null) {
                 loadRoleInfo();
                 return;
             }
-
-            // 保存当前角色信息
+            // 保存当前角色信息（带userId后缀）
             SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
-            editor.putString(KEY_ROLE_NAME, characterName.get());
-            editor.putString(KEY_IMAGE_PATH, imagePath.get());
+            editor.putString(getRoleNameKey(userId), characterName.get());
+            editor.putString(getImagePathKey(userId), imagePath.get());
             editor.apply();
 
             // 加载角色信息
@@ -158,8 +157,10 @@ public class joypal_chat extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         try {
-            outState.putString(KEY_CHARACTER_NAME, characterName.get());
-            outState.putString(KEY_IMAGE_PATH, imagePath.get());
+            SharedPreferences userPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+            String userId = userPrefs.getString("userId", "");
+            outState.putString(getRoleNameKey(userId), characterName.get());
+            outState.putString(getImagePathKey(userId), imagePath.get());
         } catch (Exception e) {
             Log.e(TAG, "Error saving instance state", e);
         }
@@ -169,9 +170,11 @@ public class joypal_chat extends AppCompatActivity {
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         try {
+            SharedPreferences userPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+            String userId = userPrefs.getString("userId", "");
             if (savedInstanceState != null) {
-                characterName.set(savedInstanceState.getString(KEY_CHARACTER_NAME));
-                imagePath.set(savedInstanceState.getString(KEY_IMAGE_PATH));
+                characterName.set(savedInstanceState.getString(getRoleNameKey(userId)));
+                imagePath.set(savedInstanceState.getString(getImagePathKey(userId)));
                 loadRoleInfo();
             }
         } catch (Exception e) {
@@ -237,10 +240,13 @@ public class joypal_chat extends AppCompatActivity {
      * 加载角色信息
      */
     private void loadRoleInfo() {
-        // 从SharedPreferences获取角色信息
+        // 获取当前userId
+        SharedPreferences userPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String userId = userPrefs.getString("userId", "");
+        // 从SharedPreferences获取角色信息（带userId后缀）
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String roleName = prefs.getString(KEY_ROLE_NAME, "");
-        String savedImagePath = prefs.getString(KEY_IMAGE_PATH, "");
+        String roleName = prefs.getString(getRoleNameKey(userId), "");
+        String savedImagePath = prefs.getString(getImagePathKey(userId), "");
 
         Log.d(TAG, "开始加载角色信息");
         Log.d(TAG, "从SharedPreferences获取 - 角色名: " + roleName + ", 图片路径: " + savedImagePath);
@@ -250,9 +256,8 @@ public class joypal_chat extends AppCompatActivity {
             AppDatabase db = AppDatabase.getDatabase(this);
             new Thread(() -> {
                 try {
-                    Log.d(TAG, "开始查询数据库 - 角色名: " + roleName);
-                    ImageRoleEntity role = db.imageRoleDao().getRoleByName(roleName);
-                    
+                    Log.d(TAG, "开始查询数据库 - 角色名: " + roleName + ", userId: " + userId);
+                    ImageRoleEntity role = db.imageRoleDao().getRoleByNameAndUserId(roleName, userId);
                     if (role != null) {
                         Log.d(TAG, "数据库查询成功 - 角色信息: " + role.toString());
                         // 使用数据库中的信息更新UI
@@ -271,7 +276,7 @@ public class joypal_chat extends AppCompatActivity {
                             sendButton.setEnabled(true);
                         });
                     } else {
-                        Log.w(TAG, "数据库查询失败 - 未找到角色: " + roleName);
+                        Log.w(TAG, "数据库查询失败 - 未找到角色: " + roleName + ", userId: " + userId);
                         // 如果数据库中没有找到角色，使用 SharedPreferences 中的信息
                         runOnUiThread(() -> {
                             TextView ocNameText = findViewById(R.id.oc_name_text);
@@ -287,10 +292,9 @@ public class joypal_chat extends AppCompatActivity {
                             messageInput.setEnabled(true);
                             sendButton.setEnabled(true);
                         });
-                        
                         // 尝试重新保存到数据库
                         try {
-                            ImageRoleEntity newRole = new ImageRoleEntity(savedImagePath, roleName, "", "", "", "");
+                            ImageRoleEntity newRole = new ImageRoleEntity(savedImagePath, roleName, "", "", "", "", userId);
                             db.imageRoleDao().insert(newRole);
                             Log.d(TAG, "尝试重新保存角色到数据库");
                         } catch (Exception e) {
@@ -322,17 +326,14 @@ public class joypal_chat extends AppCompatActivity {
             AppDatabase db = AppDatabase.getDatabase(this);
             new Thread(() -> {
                 try {
-                    List<ImageRoleEntity> roles = db.imageRoleDao().getAllSync();
-                    Log.d(TAG, "数据库中共有 " + (roles != null ? roles.size() : 0) + " 个角色");
-                    
+                    List<ImageRoleEntity> roles = db.imageRoleDao().getAllByUserIdSync(userId);
+                    Log.d(TAG, "数据库中当前用户共有 " + (roles != null ? roles.size() : 0) + " 个角色");
                     if (roles != null && !roles.isEmpty()) {
                         ImageRoleEntity latestRole = roles.get(roles.size() - 1);
                         Log.d(TAG, "使用最新角色: " + latestRole.toString());
-                        
                         // 使用 AtomicReference 更新值
                         characterName.set(latestRole.getRoleName());
                         imagePath.set(latestRole.getImagePath());
-                        
                         runOnUiThread(() -> {
                             TextView ocNameText = findViewById(R.id.oc_name_text);
                             if (ocNameText != null) {
@@ -346,13 +347,11 @@ public class joypal_chat extends AppCompatActivity {
                                 .into(ocImageView);
                             messageInput.setEnabled(true);
                             sendButton.setEnabled(true);
-
                             // 保存当前角色信息到 SharedPreferences
                             SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
-                            editor.putString(KEY_ROLE_NAME, latestRole.getRoleName());
-                            editor.putString(KEY_IMAGE_PATH, latestRole.getImagePath());
+                            editor.putString(getRoleNameKey(userId), latestRole.getRoleName());
+                            editor.putString(getImagePathKey(userId), latestRole.getImagePath());
                             editor.apply();
-                            
                             Log.d(TAG, "更新SharedPreferences - 最新角色名: " + latestRole.getRoleName() + ", 图片路径: " + latestRole.getImagePath());
                         });
                     } else {
@@ -642,5 +641,12 @@ public class joypal_chat extends AppCompatActivity {
 
         // 滚动到底部
         scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+    }
+
+    private static String getRoleNameKey(String userId) {
+        return KEY_ROLE_NAME + "_" + userId;
+    }
+    private static String getImagePathKey(String userId) {
+        return KEY_IMAGE_PATH + "_" + userId;
     }
 }

@@ -12,9 +12,9 @@ public class RolesListViewModel extends ViewModel {
 
     private final LiveData<List<ImageRoleEntity>> roleList;
 
-    public RolesListViewModel(ImageRoleDao imageRoleDao) {
-        // 初始化角色数据
-        roleList = imageRoleDao.getAll();
+    public RolesListViewModel(ImageRoleDao imageRoleDao, String userId) {
+        // 初始化角色数据，只查当前用户
+        roleList = imageRoleDao.getRolesByUserId(userId);
     }
 
     public LiveData<List<ImageRoleEntity>> getRoleList() {

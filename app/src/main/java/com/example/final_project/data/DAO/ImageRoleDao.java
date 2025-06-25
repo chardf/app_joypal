@@ -38,4 +38,13 @@ public interface ImageRoleDao {
 
     @Query("SELECT COUNT(*) FROM image_role")
     int getCount();
+
+    @Query("SELECT * FROM image_role WHERE userId = :userId")
+    LiveData<List<ImageRoleEntity>> getRolesByUserId(String userId);
+
+    @Query("SELECT * FROM image_role WHERE roleName = :roleName AND userId = :userId LIMIT 1")
+    ImageRoleEntity getRoleByNameAndUserId(String roleName, String userId);
+
+    @Query("SELECT * FROM image_role WHERE userId = :userId")
+    List<ImageRoleEntity> getAllByUserIdSync(String userId);
 }

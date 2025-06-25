@@ -29,6 +29,9 @@ import androidx.core.content.ContextCompat;
 import com.example.final_project.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.example.final_project.data.database.AppDatabase;
+import com.example.final_project.data.DAO.ImageRoleDao;
+import com.example.final_project.data.model.Entity.ImageRoleEntity;
 
 public class personality_design extends AppCompatActivity {
 
@@ -173,18 +176,31 @@ public class personality_design extends AppCompatActivity {
                 String personality = personalityEditText.getText().toString().trim();
                 String userInput = combineInputsAsString();
 
-                Intent intent = new Intent(this, oc_loading.class);
-                intent.putExtra("userInput", userInput);
-                intent.putExtra("roleName", name);
-                intent.putExtra("name", name);
-                intent.putExtra("look", look);
-                intent.putExtra("gender", gender);
-                intent.putExtra("personality", personality);
-                if (selectedImagePath != null) {
-                    intent.putExtra("referenceImagePath", selectedImagePath);
-                }
-                startActivity(intent);
-                finish();
+                // 新增：查重逻辑
+                String userId = getSharedPreferences("user_prefs", MODE_PRIVATE).getString("userId", "");
+                AppDatabase db = AppDatabase.getDatabase(this);
+                ImageRoleDao dao = db.imageRoleDao();
+                new Thread(() -> {
+                    ImageRoleEntity exist = dao.getRoleByNameAndUserId(name, userId);
+                    runOnUiThread(() -> {
+                        if (exist != null) {
+                            Toast.makeText(this, "你已有该角色", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Intent intent = new Intent(this, oc_loading.class);
+                            intent.putExtra("userInput", userInput);
+                            intent.putExtra("roleName", name);
+                            intent.putExtra("name", name);
+                            intent.putExtra("look", look);
+                            intent.putExtra("gender", gender);
+                            intent.putExtra("personality", personality);
+                            if (selectedImagePath != null) {
+                                intent.putExtra("referenceImagePath", selectedImagePath);
+                            }
+                            startActivity(intent);
+                            finish();
+                        }
+                    });
+                }).start();
             }
         });
     }

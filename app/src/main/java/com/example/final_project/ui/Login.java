@@ -115,6 +115,12 @@ public class Login extends AppCompatActivity {
                         user.getInt("id"), 
                         user.getString("role"));
 
+                    // 新增：保存 userId 到 SharedPreferences
+                    getSharedPreferences("user_prefs", MODE_PRIVATE)
+                        .edit()
+                        .putString("userId", String.valueOf(user.getInt("id")))
+                        .apply();
+
                     // 登录成功，跳转到 getstart 页面
                     runOnUiThread(() -> {
                         Intent intent = new Intent(Login.this, getstart.class);
