@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFDEE"
+    android:background="#FFFFFF"
     tools:context=".ui.getstart">
 
     <!-- TextView -->
@@ -161,7 +161,7 @@
             android:layout_width="300dp"
             android:layout_height="58dp"
             android:layout_marginTop="20dp"
-            android:backgroundTint="#044132"
+            android:backgroundTint="#6A62B7"
             android:enabled="false"
             android:text="@string/button_next"
             android:textAppearance="@style/button"
@@ -190,7 +190,7 @@
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:layout_marginTop="2dp"
-            android:backgroundTint="#044132"
+            android:backgroundTint="#6A62B7"
             android:text="@string/button_skip"
             android:textAppearance="@style/button"
             app:cornerRadius="29dp"

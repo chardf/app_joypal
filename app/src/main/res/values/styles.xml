@@ -23,6 +23,7 @@
     <style name="BottomNavigationViewStyle" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="itemIconSize">50dp</item> <!-- 设置图标大小 -->
         <item name="itemIconTint">@drawable/bottom_nav_item_color</item> <!-- 设置图标颜色 -->
+        <item name="android:background">#FFFFFF</item>
     </style>
     <style name="joypal2">
         <item name="android:textSize">24sp</item>

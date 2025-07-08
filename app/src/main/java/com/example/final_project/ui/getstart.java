@@ -32,14 +32,13 @@ import java.util.List;
 public class getstart extends AppCompatActivity {
 
     private AppDatabase appDatabase;
-    private LottieAnimationView gifImage;
     private Button startButton;
     private BottomNavigationView bottomNavigationView;
     private ImageView loadingGifView;
     private CountDownTimer countDownTimer;
     private static final int COUNTDOWN_TIME = 3000; // 3秒倒计时
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +50,6 @@ public class getstart extends AppCompatActivity {
         // 初始化 UI 元素
         startButton = findViewById(R.id.button1);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-        gifImage = findViewById(R.id.gif_image);
         loadingGifView = findViewById(R.id.loading_gif_view);
 
         // 初始状态：显示加载中
@@ -72,11 +70,6 @@ public class getstart extends AppCompatActivity {
             setupBottomNavigation(bottomNavigationView);
         }
 
-        // 初始化动画
-        if (gifImage != null) {
-            gifImage.setAnimation("homeAnimation.lottie");
-            gifImage.playAnimation();
-        }
 
         // 开始检查角色数据
         checkRoleDataAndNavigate();
@@ -206,8 +199,6 @@ public class getstart extends AppCompatActivity {
             countDownTimer.cancel();
             countDownTimer = null;
         }
-        if (gifImage != null) {
-            gifImage.cancelAnimation();
-        }
+
     }
 }

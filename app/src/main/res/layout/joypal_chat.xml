@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFDEE"
+    android:background="#FFFFFF"
     tools:context=".ui.getstart">
 
     <!-- 角色名称 -->
@@ -120,7 +120,7 @@
         style="@style/BottomNavigationViewStyle"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        app:backgroundTint="#FFFDEE"
+        app:backgroundTint="#FFFFFF"
         app:labelVisibilityMode="unlabeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/bottom_nav_menu" />

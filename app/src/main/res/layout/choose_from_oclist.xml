@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="#FFFDEE"
+    android:background="#FFFFFF"
     tools:context=".ui.getstart">
 
     <!-- 显示用户名的 TextView -->
@@ -82,15 +82,15 @@
 
     <Button
         android:id="@+id/start_chat_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="155dp"
+        android:layout_height="72dp"
         android:layout_marginTop="60dp"
         android:text="Begin"
+        android:textAppearance="@style/button"
         android:textColor="#FFFFFF"
         android:textSize="20sp"
-        app:backgroundTint="#044132"
+        app:backgroundTint="#6A62B7"
         app:layout_constraintEnd_toEndOf="parent"
-        android:textAppearance="@style/button"
 
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -110,7 +110,7 @@
         style="@style/BottomNavigationViewStyle"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        app:backgroundTint="#FFFDEE"
+        app:backgroundTint="#FFFFFF"
         app:labelVisibilityMode="unlabeled"
         app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent"

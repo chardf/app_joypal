@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFDEE"
+    android:background="#FFFFFF"
     tools:context=".ui.getstart">
 
     <!-- App Logo -->
@@ -84,7 +84,7 @@
             android:minHeight="48dp"
             android:padding="10dp"
             android:text="Register"
-            android:textColor="#044132"
+            android:textColor="#6A62B7"
             android:textSize="14sp" />
 
     </LinearLayout>
@@ -98,7 +98,7 @@
         android:layout_marginBottom="336dp"
         android:text="Login"
         android:textAppearance="@style/button"
-        app:backgroundTint="#044132"
+        app:backgroundTint="#6A62B7"
         app:cornerRadius="29dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

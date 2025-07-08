@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFDEE"
+    android:background="#FFFFFF"
     tools:context=".ui.settings">
 
     <!-- 标题 -->
@@ -29,7 +29,7 @@
         android:layout_height="58dp"
         android:layout_marginTop="40dp"
         android:text="@string/button_clear"
-        app:backgroundTint="#044132"
+        app:backgroundTint="#6A62B7"
         app:cornerRadius="29dp"
         app:iconPadding="8dp"
         app:rippleColor="#80FFFFFF"
@@ -47,7 +47,7 @@
         android:layout_height="58dp"
         android:layout_marginTop="16dp"
         android:text="View Your Roles"
-        app:backgroundTint="#044132"
+        app:backgroundTint="#6A62B7"
         app:cornerRadius="29dp"
         app:iconPadding="8dp"
         app:rippleColor="#80FFFFFF"
@@ -65,7 +65,7 @@
         android:layout_height="58dp"
         android:layout_marginTop="16dp"
         android:text="Change Password"
-        app:backgroundTint="#044132"
+        app:backgroundTint="#6A62B7"
         app:cornerRadius="29dp"
         app:iconPadding="8dp"
         app:rippleColor="#80FFFFFF"
@@ -95,14 +95,6 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- 分割线 -->
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:background="#CCCCCC"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- 底部导航栏 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -110,9 +102,16 @@
         style="@style/BottomNavigationViewStyle"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        app:backgroundTint="#FFFDEE"
+        app:backgroundTint="#FFFFFF"
         app:labelVisibilityMode="unlabeled"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
+        app:menu="@menu/bottom_nav_menu" >
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="#CCCCCC" />
+    </com.google.android.material.bottomnavigation.BottomNavigationView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

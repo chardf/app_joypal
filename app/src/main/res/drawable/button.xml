@@ -13,7 +13,7 @@
     <!-- 默认状态 -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#044132" />
+            <solid android:color="#D7D0FE" />
             <corners android:radius="29dp" />
             <stroke
                 android:width="2dp"

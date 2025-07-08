@@ -6,77 +6,63 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFDEE"
+    android:background="#FFFFFF"
     tools:context=".ui.getstart">
 
-    <!-- 内容区域 -->
+
+    <!-- 按钮 -->
+
     <RelativeLayout
         android:id="@+id/content_frame"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/button1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/gif_image">
-
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+        <!-- create joypal横幅，居中显示 -->
+        <ImageView
+            android:id="@+id/joypal"
+            android:layout_width="227dp"
+            android:layout_height="90dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="100dp"
+            app:srcCompat="@drawable/create_joypal" />
         <!-- 应用 Logo -->
         <ImageView
             android:id="@+id/logo"
-            android:layout_width="122dp"
-            android:layout_height="134dp"
-            android:layout_centerInParent="true"
-            app:srcCompat="@drawable/logo"
-            android:translationY="-60sp" />
+            android:layout_width="150dp"
+            android:layout_height="200dp"
+            android:layout_below="@id/joypal"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="40dp"
+            app:srcCompat="@drawable/load2" />
 
         <!-- 标题 -->
-        <TextView
-            android:id="@+id/joypal"
-            android:layout_width="136dp"
-            android:layout_height="50dp"
-            android:layout_alignTop="@id/logo"
-            android:layout_centerHorizontal="true"
-            android:gravity="center_horizontal|top"
-            android:lineSpacingExtra="1sp"
-            android:text="@string/joypal"
-            android:textAppearance="@style/joypal"
-            android:translationY="-100sp" />
+
+
 
         <!-- 角色创建横幅 -->
         <ImageView
             android:id="@+id/characterc"
             android:layout_width="match_parent"
             android:layout_height="59dp"
-            android:layout_below="@id/joypal"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="50dp"
+            android:layout_below="@id/logo"
+            android:layout_marginTop="100dp"
             app:srcCompat="@drawable/charactercreator" />
     </RelativeLayout>
 
-    <!-- 动画区域 -->
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/gif_image"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="-100dp"
-        android:layout_marginBottom="120dp"
-        app:layout_constraintBottom_toTopOf="@id/button1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/content_frame"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        app:lottie_speed="0.5"
-        app:lottie_fileName="homeAnimation.lottie" />
-    <!-- 按钮 -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button1"
         android:layout_width="300dp"
         android:layout_height="58dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="20dp"
         android:text="@string/button"
         android:translationY="-70sp"
-        app:backgroundTint="#044132"
+        app:backgroundTint="#6A62B7"
         app:cornerRadius="29dp"
         app:iconPadding="8dp"
         app:rippleColor="#80FFFFFF"
@@ -87,14 +73,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-
     <!-- 底部导航栏 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         style="@style/BottomNavigationViewStyle"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        app:backgroundTint="#FFFDEE"
+        app:backgroundTint="#FFFFFF"
         app:labelVisibilityMode="unlabeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/bottom_nav_menu" />
