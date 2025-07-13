@@ -26,12 +26,19 @@
         <item name="android:background">#FFFFFF</item>
     </style>
     <style name="joypal2">
-        <item name="android:textSize">24sp</item>
+        <item name="android:textSize">40sp</item>
         <item name="android:textColor">#5C4B51</item>
-        <item name="android:fontFamily">@font/otomanopeeone</item>
+        <item name="android:fontFamily">@font/ebgaramondbold</item>
         <item name="android:lineSpacingExtra">1sp</item>
     </style>
 
+
+    <style name="let_s_set_j">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#5C4B51</item>
+        <item name="android:fontFamily">@font/commissionerbold</item>
+        <item name="android:lineSpacingExtra">1sp</item>
+    </style>
     <style name="create_describe2">
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">#5C4B51</item>

@@ -9,18 +9,20 @@
     tools:context=".ui.Create_Joypal">
 
     <!-- 内容区域 -->
+
     <TextView
         android:id="@+id/create_joypal"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
+        android:layout_marginTop="160dp"
         android:gravity="center"
         android:text="Create JoyPal"
-        android:textAppearance="@style/joypal"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textAppearance="@style/joypal2"
         android:textSize="40dp"
-        android:layout_marginTop="200dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/create_first_joypal"
@@ -28,7 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
         android:gravity="center"
-        android:text="Create your JoyPal!"
+        android:text="Create your JoyPal now!"
         android:textAppearance="@style/carterone"
         android:textColor="#000000"
         android:textSize="17sp"
@@ -37,23 +39,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/create_joypal" />
 
-    <!-- GIF动画ImageView -->
+<!--    &lt;!&ndash; GIF动画ImageView &ndash;&gt;-->
+<!--    <ImageView-->
+<!--        android:id="@+id/gif_image"-->
+<!--        android:layout_width="200dp"-->
+<!--        android:layout_height="239dp"-->
+<!--        android:layout_marginTop="40dp"-->
+<!--        android:scaleType="centerCrop"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintHorizontal_bias="0.498"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/create_first_joypal"-->
+<!--        app:srcCompat="@drawable/load2" />-->
+
     <ImageView
         android:id="@+id/gif_image"
         android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_marginTop="40dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        android:layout_height="200dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="128dp"
+        android:layout_marginTop="44dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_first_joypal" />
+        app:layout_constraintTop_toBottomOf="@id/create_first_joypal"
+        app:srcCompat="@drawable/load2" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_design"
         android:layout_width="300dp"
         android:layout_height="58dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="100dp"
         android:backgroundTint="@null"
         android:text="@string/button_design"
         android:textAppearance="@style/button"
@@ -67,7 +81,6 @@
         app:rippleColor="#80FFFFFF"
         app:strokeColor="#2C2C2C"
         app:strokeWidth="2dp" />
-
 
     <View
         android:layout_width="match_parent"

@@ -229,7 +229,7 @@ public class personality_design extends AppCompatActivity {
 
     private void updateNextButtonState(boolean isEnabled) {
         nextButton.setEnabled(isEnabled);
-        nextButton.setBackgroundColor(isEnabled ? Color.parseColor("#044132") : Color.parseColor("#B0B0B0"));
+        nextButton.setBackgroundColor(isEnabled ? Color.parseColor("#6A62B7") : Color.parseColor("#B0B0B0"));
     }
 
     private String combineInputsAsString() {

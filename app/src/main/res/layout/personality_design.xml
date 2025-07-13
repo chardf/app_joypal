@@ -12,43 +12,71 @@
 
     <!-- 输入框容器 -->
 
+
+    <!-- 底部导航栏 -->
+
     <TextView
         android:id="@+id/create_describe"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:layout_marginTop="68dp"
+        android:layout_marginTop="108dp"
         android:gravity="center"
-        android:text="@string/create_describe"
+        android:shadowColor="#40000000"
+        android:shadowDx="0"
+        android:shadowDy="4"
+        android:shadowRadius="4"
+        android:text="PERSONALITY"
         android:textAppearance="@style/joypal2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/let_s_set_j"
+        android:layout_width="400dp"
+        android:layout_height="28dp"
+        android:layout_marginTop="28dp"
+        android:gravity="center_horizontal|top"
+        android:lineSpacingExtra="8sp"
+        android:shadowColor="#40000000"
+        android:shadowDx="0"
+        android:shadowDy="4"
+        android:shadowRadius="4"
+        android:text="Let’s set JoyPal’s personality!"
+        android:textAppearance="@style/let_s_set_j"
+        android:translationY="-20sp"
+        app:layout_constraintTop_toBottomOf="@id/create_describe"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="11dp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="84dp"
+        android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/create_describe"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp"
-        android:gravity="center">
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/create_describe">
 
         <!-- 输入框 1 -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
+
             <EditText
                 android:id="@+id/nameEditText"
                 android:layout_width="340dp"
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
-                android:background="@android:color/white"
                 android:hint="What's JoyPal's Name?"
-                android:textColor="@android:color/black"
+                android:maxLength="30"
                 android:padding="10dp"
-                android:maxLength="30" />
+                android:textColor="@android:color/black"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="#6A62B7" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- 输入框 2 -->
@@ -56,16 +84,18 @@
             android:id="@+id/lookEditText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
+
             <EditText
                 android:id="@+id/look"
                 android:layout_width="340dp"
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
-                android:background="@android:color/white"
                 android:hint="What does JoyPal look like?"
-                android:textColor="@android:color/black"
+                android:maxLength="30"
                 android:padding="10dp"
-                android:maxLength="30" />
+                android:textColor="@android:color/black"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="#6A62B7" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- 输入框 3 -->
@@ -73,16 +103,18 @@
             android:id="@+id/genderEditText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
+
             <EditText
                 android:id="@+id/gender"
                 android:layout_width="340dp"
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
-                android:background="@android:color/white"
                 android:hint="What's JoyPal's Gender?"
-                android:textColor="@android:color/black"
+                android:maxLength="30"
                 android:padding="10dp"
-                android:maxLength="30" />
+                android:textColor="@android:color/black"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="#6A62B7" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- 输入框 4 -->
@@ -90,16 +122,18 @@
             android:id="@+id/personalityEditText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
+
             <EditText
                 android:id="@+id/personality"
                 android:layout_width="340dp"
                 android:layout_height="50dp"
                 android:layout_marginBottom="10dp"
-                android:background="@android:color/white"
                 android:hint="What's JoyPal's Personality?"
-                android:textColor="@android:color/black"
+                android:maxLength="30"
                 android:padding="10dp"
-                android:maxLength="30" />
+                android:textColor="@android:color/black"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="#6A62B7" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- MaterialButton -->
@@ -118,7 +152,7 @@
             android:textColor="#2A9DCE"
             android:textSize="14sp"
             android:textStyle="normal"
-            android:visibility="visible"/>
+            android:visibility="visible" />
 
         <LinearLayout
             android:id="@+id/image_preview_container"
@@ -133,16 +167,16 @@
                 android:id="@+id/delete_reference_image"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/bin"
-                android:contentDescription="@string/delete_reference_image" />
+                android:contentDescription="@string/delete_reference_image"
+                android:src="@drawable/bin" />
 
             <TextView
                 android:id="@+id/reference_image_filename"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
+                android:layout_weight="1"
                 android:ellipsize="middle"
                 android:singleLine="true"
                 android:textColor="@android:color/darker_gray" />
@@ -200,13 +234,12 @@
             app:strokeWidth="2dp" />
     </LinearLayout>
 
-    <!-- 底部导航栏 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         style="@style/BottomNavigationViewStyle"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        app:backgroundTint="#FFFDEE"
+        app:backgroundTint="#FFFFFF"
         app:labelVisibilityMode="unlabeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/bottom_nav_menu" />
